@@ -25,7 +25,7 @@
      Colors are painted explicitly on :root (see artifact rules) rather than
      forked by theme — the glass effect is the point, and it only reads
      against this specific backdrop.
-     ===================================================================== */
+     ===================================================================== */ 
 
   :root {
     color-scheme: dark;
@@ -490,17 +490,32 @@
   /* ---------------------------------------------------------------------
      INVESTMENT PLANNER
      --------------------------------------------------------------------- */
-  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 760px) { .plan-grid { grid-template-columns: 1fr; } }
+  .plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));  /* was 1fr 1fr */
+  gap: 16px;
+}
+.plan-grid > .field { min-width: 0; }
+  @media (max-width: 1000px) { .plan-grid { grid-template-columns: 1fr; } }
 
   .income-recap { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--r-sm); background: rgba(0,0,0,0.2); border: 1px solid var(--glass-edge); font-size: 13px; color: var(--ink-2); margin-bottom: 18px; }
   .income-recap b { color: var(--ink-1); font-family: var(--font-mono); }
 
-  .amount-field { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.24); border: 1px solid var(--glass-edge); border-radius: var(--r-sm); padding: 4px 4px 4px 16px; }
-  .amount-field .prefix { font-family: var(--font-display); font-size: 20px; color: var(--ink-3); }
-  .amount-field input { flex: 1; background: none; border: none; color: var(--ink-1); font-family: var(--font-display); font-size: 22px; padding: 10px 4px; font-variant-numeric: tabular-nums; min-width: 0; }
-  .amount-field input:focus { outline: none; }
-  .amount-field .unit { font-size: 12px; color: var(--ink-3); padding-right: 10px; white-space: nowrap; }
+  .amount-field {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-width: 0;                          /* added */
+  background: rgba(0,0,0,0.24); border: 1px solid var(--glass-edge);
+  border-radius: var(--r-sm); padding: 4px 4px 4px 16px;
+}
+.amount-field .prefix { flex-shrink: 0; font-family: var(--font-display); font-size: 20px; color: var(--ink-3); }
+.amount-field input {
+  flex: 1 1 0; width: 0; min-width: 0;                /* width:0 removes the intrinsic size */
+  background: none; border: none; color: var(--ink-1);
+  font-family: var(--font-display); font-size: 22px;
+  padding: 10px 4px; font-variant-numeric: tabular-nums;
+}
+.amount-field input:focus { outline: none; }
+.amount-field .unit { flex-shrink: 0; font-size: 12px; color: var(--ink-3); padding-right: 10px; white-space: nowrap; }
   .text-link { background: none; border: none; padding: 0; color: var(--gold-bright); font-weight: 700; font-size: 11.5px; cursor: pointer; }
   .text-link:hover { text-decoration: underline; }
 
@@ -2229,7 +2244,7 @@
   function renderGrowthChart(plan) {
     var svg = $("growth-chart");
     svg.innerHTML = "";
-    var W = 640, H = 220, padL = 54, padR = 14, padT = 16, padB = 28;
+    var W = 640, H = 220, padL = 54, padR = 14, padT = 36, padB = 28;
     var series = plan.series;
     var maxVal = Math.max.apply(null, series.map(function (p) { return p.value; })) || 1;
 
