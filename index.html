@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Money Compass</title>
+<script>try { document.documentElement.setAttribute("data-theme", localStorage.getItem("money-compass-theme") === "light" ? "light" : "dark"); } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }</script>
 <meta name="description" content="An adaptive financial-literacy assessment for Indian retail investors — a deterministic score, an AI-written explanation, a risk profile, and an investment plan that bifurcates your money across FDs, mutual funds, direct equity and gold." />
 <meta property="og:title" content="Money Compass" />
 <meta property="og:description" content="Adaptive financial-literacy assessment, AI-narrated score and risk profile, and an investment planner — for an Indian retail audience." />
@@ -43,6 +44,10 @@
     --glass-edge: rgba(244, 239, 226, 0.14);
     --glass-edge-bright: rgba(244, 239, 226, 0.32);
     --glass-shadow: rgba(2, 8, 6, 0.6);
+
+    /* recessed surfaces: tracks, inputs, badges, wells */
+    --well: rgba(0, 0, 0, 0.23);
+    --well-strong: rgba(0, 0, 0, 0.29);
 
     /* ---- brand accents ---- */
     --gold: #d9a54a;
@@ -93,6 +98,49 @@
     --r-xl: 32px;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  /* ---------------------------------------------------------------------
+     LIGHT THEME — the same glass system on warm paper. Every text colour
+     was checked at 4.5:1 or better on both the page and the glass cards
+     (--gold is only used for fills and borders, where 3:1 applies).
+     --------------------------------------------------------------------- */
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --ground: #f3efe6;
+    --ground-2: #ebe6da;
+    --ink-1: #1d2320;
+    --ink-2: #474c46;
+    --ink-3: #686458;
+    --glass-fill: rgba(255, 255, 255, 0.55);
+    --glass-fill-strong: rgba(255, 255, 255, 0.78);
+    --glass-edge: rgba(29, 35, 32, 0.13);
+    --glass-edge-bright: rgba(255, 255, 255, 0.95);
+    --glass-shadow: rgba(70, 58, 34, 0.18);
+    --gold: #a8741c;
+    --gold-bright: #8a5d0f;
+    --teal-bright: #1c7a5c;
+    --status-good: #1d7a38;
+    --status-warn: #8f5a00;
+    --status-critical: #b03a2e;
+    --well: rgba(29, 35, 32, 0.06);
+    --well-strong: rgba(29, 35, 32, 0.1);
+    --chart-surface: #ffffff;
+  }
+  /* The primary button keeps its bright gold face in both themes. */
+  :root[data-theme="light"] .btn-primary { background: linear-gradient(155deg, #f0c569, #d9a54a); }
+  :root[data-theme="light"] .blob { opacity: 0.35; }
+  :root[data-theme="light"] .atmosphere::after { opacity: 0.12; }
+
+  .theme-toggle {
+    width: 42px; height: 42px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+    color: var(--ink-1); cursor: pointer; flex-shrink: 0;
+  }
+  .theme-toggle:hover { color: var(--gold-bright); }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="light"] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+  .auth-wrap > .theme-toggle { position: absolute; top: 18px; right: 18px; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -283,13 +331,13 @@
   .field { display: flex; flex-direction: column; gap: 7px; }
   .field label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .field input, .field select {
-    background: rgba(0,0,0,0.22); border: 1px solid var(--glass-edge); color: var(--ink-1);
+    background: var(--well); border: 1px solid var(--glass-edge); color: var(--ink-1);
     padding: 12px 14px; border-radius: var(--r-sm); font-size: 14.5px; font-family: inherit;
   }
   .field input:focus, .field select:focus { border-color: var(--gold); }
   .field input::placeholder { color: var(--ink-3); }
 
-  .segmented { display: flex; gap: 6px; padding: 4px; background: rgba(0,0,0,0.22); border: 1px solid var(--glass-edge); border-radius: 999px; }
+  .segmented { display: flex; gap: 6px; padding: 4px; background: var(--well); border: 1px solid var(--glass-edge); border-radius: 999px; }
   .segmented button {
     flex: 1; border: none; background: transparent; color: var(--ink-2); font-size: 13px; font-weight: 700;
     padding: 9px 10px; border-radius: 999px; cursor: pointer; transition: background 0.2s var(--ease), color 0.2s var(--ease);
@@ -310,7 +358,7 @@
   .stat-tile { display: flex; flex-direction: column; gap: 10px; }
   .stat-tile .label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); font-weight: 700; }
   .stat-tile .value { font-family: var(--font-display); font-size: 40px; font-variant-numeric: tabular-nums; line-height: 1; }
-  .meter-track { height: 6px; border-radius: 4px; background: rgba(0,0,0,0.3); overflow: hidden; }
+  .meter-track { height: 6px; border-radius: 4px; background: var(--well-strong); overflow: hidden; }
   .meter-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--teal), var(--gold-bright)); width: 0%; transition: width 1s var(--ease); }
 
   /* ---------------------------------------------------------------------
@@ -341,7 +389,7 @@
   .profile-pick-card:hover { background: var(--glass-fill-strong); }
   .profile-pick-card.selected { background: rgba(217,165,74,0.14); border-color: rgba(217,165,74,0.55); }
   .profile-pick-card .ppc-icon {
-    width: 38px; height: 38px; border-radius: 10px; background: rgba(0,0,0,0.28); flex-shrink: 0;
+    width: 38px; height: 38px; border-radius: 10px; background: var(--well-strong); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; color: var(--ink-2);
   }
   .profile-pick-card.selected .ppc-icon { background: var(--gold); color: #251705; }
@@ -354,7 +402,7 @@
      QUESTIONNAIRE
      --------------------------------------------------------------------- */
   .q-progress-row { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
-  .q-progress-track { flex: 1; height: 8px; border-radius: 6px; background: rgba(0,0,0,0.3); overflow: hidden; }
+  .q-progress-track { flex: 1; height: 8px; border-radius: 6px; background: var(--well-strong); overflow: hidden; }
   .q-progress-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), var(--gold-bright)); transition: width 0.5s var(--ease); }
   .q-progress-label { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); white-space: nowrap; }
 
@@ -378,7 +426,7 @@
     text-align: left; color: var(--ink-1); font-size: 14.5px; font-family: inherit;
   }
   .option:hover { background: var(--glass-fill-strong); }
-  .option .badge { width: 26px; height: 26px; border-radius: 8px; background: rgba(0,0,0,0.28); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--ink-2); flex-shrink: 0; font-family: var(--font-mono); }
+  .option .badge { width: 26px; height: 26px; border-radius: 8px; background: var(--well-strong); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--ink-2); flex-shrink: 0; font-family: var(--font-mono); }
   .option.selected { background: rgba(217,165,74,0.14); border-color: rgba(217,165,74,0.55); }
   .option.selected .badge { background: var(--gold); color: #251705; }
   .option .check { margin-left: auto; opacity: 0; transition: opacity 0.15s; color: var(--gold-bright); }
@@ -396,7 +444,7 @@
   .number-step:hover { background: var(--glass-fill-strong); }
   .number-field { flex: 1; position: relative; }
   .number-field input {
-    width: 100%; background: rgba(0,0,0,0.24); border: 1px solid var(--glass-edge); color: var(--ink-1);
+    width: 100%; background: var(--well); border: 1px solid var(--glass-edge); color: var(--ink-1);
     font-family: var(--font-display); font-size: 30px; text-align: center; padding: 14px 10px; border-radius: var(--r-md);
     font-variant-numeric: tabular-nums;
   }
@@ -446,19 +494,19 @@
   .ring-value .of100 { font-size: 11px; color: var(--ink-3); }
   .score-hero-text h2 { font-size: 22px; margin-bottom: 6px; }
   .score-hero-text p { color: var(--ink-2); font-size: 13.5px; max-width: 380px; }
-  .sample-tag { display:inline-flex; align-items:center; gap:6px; font-size: 11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color: var(--ink-3); background: rgba(0,0,0,0.25); border:1px solid var(--glass-edge); padding: 4px 10px; border-radius: 999px; margin-bottom: 14px; }
+  .sample-tag { display:inline-flex; align-items:center; gap:6px; font-size: 11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color: var(--ink-3); background: var(--well); border:1px solid var(--glass-edge); padding: 4px 10px; border-radius: 999px; margin-bottom: 14px; }
 
   .breakdown-row { display: grid; grid-template-columns: 148px 1fr 40px; align-items: center; gap: 14px; padding: 9px 0; }
   .breakdown-row .cat-label { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
   .breakdown-row .cat-label .dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
-  .breakdown-track { height: 9px; border-radius: 5px; background: rgba(0,0,0,0.28); overflow: hidden; }
+  .breakdown-track { height: 9px; border-radius: 5px; background: var(--well-strong); overflow: hidden; }
   .breakdown-fill { height: 100%; border-radius: 5px; width: 0%; transition: width 1.1s var(--ease); }
   .breakdown-pct { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
 
   .provenance-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .provenance {
     display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
-    background: rgba(0,0,0,0.24); border: 1px solid var(--glass-edge); font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2);
+    background: var(--well); border: 1px solid var(--glass-edge); font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2);
     transition: opacity 0.2s var(--ease);
   }
   .provenance .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--status-good); }
@@ -515,13 +563,13 @@
 .plan-grid > .field { min-width: 0; }
   @media (max-width: 1000px) { .plan-grid { grid-template-columns: 1fr; } }
 
-  .income-recap { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--r-sm); background: rgba(0,0,0,0.2); border: 1px solid var(--glass-edge); font-size: 13px; color: var(--ink-2); margin-bottom: 18px; }
+  .income-recap { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--well); border: 1px solid var(--glass-edge); font-size: 13px; color: var(--ink-2); margin-bottom: 18px; }
   .income-recap b { color: var(--ink-1); font-family: var(--font-mono); }
 
   .amount-field {
   display: flex; align-items: center; gap: 10px;
   width: 100%; min-width: 0;                          /* added */
-  background: rgba(0,0,0,0.24); border: 1px solid var(--glass-edge);
+  background: var(--well); border: 1px solid var(--glass-edge);
   border-radius: var(--r-sm); padding: 4px 4px 4px 16px;
 }
 .amount-field .prefix { flex-shrink: 0; font-family: var(--font-display); font-size: 20px; color: var(--ink-3); }
@@ -588,7 +636,7 @@
   .priority-list { list-style: none; margin: 0; padding: 0; counter-reset: prio; display: flex; flex-direction: column; }
   .priority-list li { counter-increment: prio; display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--glass-edge); font-size: 13.5px; color: var(--ink-2); }
   .priority-list li:first-child { border-top: none; }
-  .priority-list li::before { content: counter(prio); width: 24px; height: 24px; border-radius: 8px; background: rgba(0,0,0,0.28); color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .priority-list li::before { content: counter(prio); width: 24px; height: 24px; border-radius: 8px; background: var(--well-strong); color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .priority-list .t { color: var(--ink-1); font-weight: 600; display: block; margin-bottom: 2px; }
   .priority-list .amt { font-family: var(--font-mono); color: var(--ink-1); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .plan-stat .l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 3px; }
@@ -617,6 +665,10 @@
   .hero-card { padding: 38px 42px; display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
   .hero-card h2 { font-size: 26px; max-width: 460px; margin-bottom: 10px; }
   .hero-card p { color: var(--ink-2); font-size: 14px; max-width: 420px; }
+  .hero-card .dash-profile-line { margin-top: 10px; font-size: 13px; color: var(--ink-3); }
+  .hero-card .dash-profile-line b { color: var(--gold-bright); font-weight: 700; }
+  .hero-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex-shrink: 0; }
+  @media (max-width: 720px) { .hero-actions { flex-direction: row; flex-wrap: wrap; } }
   @media (max-width: 720px) { .hero-card { flex-direction: column; align-items: flex-start; } }
 
   .dash-note { font-size: 12px; color: var(--ink-3); min-height: 1em; }
@@ -636,6 +688,13 @@
       flex-direction: row; align-items: center; padding: 10px 12px; gap: 0; z-index: 30; }
     .rail-brand, .rail-spacer, .ai-pill span.pill-text { display: none; }
     .ai-pill { padding: 10px; }
+    /* In the bottom bar the status dot sits at the far right, so the popover
+       opens leftward from it and never gets wider than the screen allows. */
+    .ai-popover { left: auto; right: 0; width: min(260px, calc(100vw - 24px));
+      /* Nested inside the bar's own frosted glass, its blur can't reach the
+         page behind it, so it gets a near-solid version of the glass tint. */
+      background: linear-gradient(158deg, rgba(30, 40, 36, 0.97), rgba(16, 26, 23, 0.97)); }
+    :root[data-theme="light"] .ai-popover { background: linear-gradient(158deg, rgba(255, 255, 255, 0.97), rgba(246, 242, 234, 0.97)); }
     .rail-nav { flex-direction: row; flex: 1; justify-content: space-around; }
     .rail-link { flex-direction: column; gap: 4px; font-size: 10px; padding: 6px 8px; text-align: center; }
     .rail-link span { display: block; }
@@ -661,6 +720,7 @@
      AUTH SCREEN
      ===================================================================== -->
 <div id="screen-auth" class="auth-wrap">
+  <button type="button" class="glass theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode"><svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg><svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 019.8 3.5a8.5 8.5 0 1010.7 10.7z"/></svg></button>
   <div class="glass auth-card">
     <div class="auth-logo">
       <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14.5" stroke="#d9a54a" stroke-width="1.5"/><path d="M21 11L14.5 14.5L11 21L17.5 17.5L21 11Z" fill="#d9a54a"/><circle cx="16" cy="16" r="1.6" fill="#0a1210"/></svg>
@@ -725,6 +785,7 @@
         </button>
       </div>
       <button type="button" class="btn btn-primary btn-block" id="profile-continue-btn" disabled style="margin-top:18px;">Continue</button>
+      <button type="button" class="btn btn-ghost btn-block" id="profile-cancel-btn" style="display:none; margin-top:10px;">Keep my current profile</button>
     </div>
 
     <div class="auth-status">
@@ -790,9 +851,12 @@
         <span class="eyebrow-label" id="topbar-eyebrow">Overview</span>
         <h1 id="topbar-title">Dashboard</h1>
       </div>
-      <div class="glass profile-chip" id="profile-chip">
-        <span class="avatar">S</span>
-        <span id="profile-chip-text">Student</span>
+      <div class="topbar-actions">
+        <button type="button" class="glass theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode"><svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg><svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 019.8 3.5a8.5 8.5 0 1010.7 10.7z"/></svg></button>
+        <div class="glass profile-chip" id="profile-chip">
+          <span class="avatar">S</span>
+          <span id="profile-chip-text">Student</span>
+        </div>
       </div>
     </div>
 
@@ -802,8 +866,15 @@
         <div>
           <h2>Know where your money habits actually stand.</h2>
           <p>A short adaptive assessment, a deterministic literacy score, and an AI-written explanation of what it means — with a risk profile and suggested allocation to follow.</p>
+          <p class="dash-profile-line">Your questions are set up for a <b id="dash-profile-name">student</b>.</p>
         </div>
-        <button class="btn btn-primary" data-action="start-questionnaire">Start assessment</button>
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-action="start-questionnaire">Start assessment</button>
+          <button class="btn btn-ghost" type="button" id="change-profile-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4-4 4"/><path d="M21 7H9a4 4 0 00-4 4"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12a4 4 0 004-4"/></svg>
+            Change profile
+          </button>
+        </div>
       </div>
 
       <div class="glass card resume-banner" id="resume-banner" style="display:none;">
@@ -917,7 +988,7 @@
       <div class="glass score-hero">
         <div class="ring-wrap">
           <svg width="148" height="148" viewBox="0 0 148 148">
-            <circle cx="74" cy="74" r="64" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="12"/>
+            <circle cx="74" cy="74" r="64" fill="none" style="stroke: var(--well-strong);" stroke-width="12"/>
             <circle id="score-ring" cx="74" cy="74" r="64" fill="none" stroke="url(#ringGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="402.1" stroke-dashoffset="402.1"/>
             <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#34ab84"/><stop offset="100%" stop-color="#f0c569"/></linearGradient></defs>
           </svg>
@@ -1264,12 +1335,25 @@
     // ---------------- BUDGETING ----------------
     { code:"age", category:"BUDGETING", weight:1, profiles:ALL_PROFILES,
       type:"NUMBER", text:"How old are you?", unit:"years", min:15, max:100,
-      hint:"Not scored — it sets your retirement timeline and how much risk suits your stage of life." },
+      hint:"Not scored — it sets your retirement timeline and how much risk suits your stage of life.",
+      variants:{ STUDENT:{ hint:"Not scored — it tells us how many years your money has to grow." },
+        RETIREE:{ hint:"Not scored — it shapes how long your savings need to last and how much risk suits you." } } },
     { code:"monthly_income", category:"BUDGETING", weight:1, profiles:ALL_PROFILES,
       type:"NUMBER", text:"Roughly what is your monthly take-home income?", unit:"₹ per month",
-      hint:"What reaches your account after tax and EPF: salary, pension plus regular withdrawals, or allowance and part-time pay. Not scored — it sizes your plan." },
-    { code:"monthly_income_range", category:"BUDGETING", weight:1, profiles:ALL_PROFILES, clarifies:"monthly_income",
+      hint:"What reaches your account after tax and EPF: salary, pension plus regular withdrawals, or allowance and part-time pay. Not scored — it sizes your plan.",
+      variants:{ STUDENT:{ text:"How much money comes to you in a typical month?", unit:"₹ per month",
+        hint:"Pocket money, allowance, stipend, scholarship, part-time or internship pay — whatever reaches you. Enter 0 if nothing comes regularly. Not scored — it sizes your plan." },
+        RETIREE:{ text:"Roughly how much comes in each month?", unit:"₹ per month",
+        hint:"Pension, annuity, interest, rent and any regular withdrawals from your savings, after tax. Not scored — it sizes your plan." },
+        PROFESSIONAL:{ hint:"Your salary as it lands in your account — after tax, EPF and other deductions — plus any regular side or freelance income. Not scored — it sizes your plan." } } },
+    { code:"monthly_income_range_student", category:"BUDGETING", weight:1, profiles:["STUDENT"], clarifies:"monthly_income",
+      type:"SINGLE", text:"No problem — roughly how much comes to you in a typical month?",
+      options:[["A","Nothing regular"],["B","Under ₹2,000"],["C","₹2,000 – ₹5,000"],["D","₹5,000 – ₹15,000"],["E","More than ₹15,000"]],
+      valueMap:{ A:{number:0}, B:{number:1000}, C:{number:3500}, D:{number:10000}, E:{number:20000} } },
+    { code:"monthly_income_range", category:"BUDGETING", weight:1, profiles:PROFESSIONAL_RETIREE, clarifies:"monthly_income",
       type:"SINGLE", text:"No problem — which range is your monthly take-home (salary, pension, or allowance) closest to?",
+      variants:{ RETIREE:{ text:"No problem — which range is your monthly income (pension, interest, rent and withdrawals together) closest to?" },
+        PROFESSIONAL:{ text:"No problem — which range is your monthly in-hand salary (plus any regular side income) closest to?" } },
       options:[["A","Under ₹25,000"],["B","₹25,000 – ₹50,000"],["C","₹50,000 – ₹1,00,000"],["D","₹1,00,000 – ₹2,00,000"],["E","Above ₹2,00,000"]],
       valueMap:{ A:{number:15000}, B:{number:37500}, C:{number:75000}, D:{number:150000}, E:{number:250000} } },
     { code:"budgeting_expense_tracking", category:"BUDGETING", weight:1, profiles:ALL_PROFILES,
@@ -1279,18 +1363,22 @@
     { code:"budgeting_needs_wants", category:"BUDGETING", weight:1, profiles:ALL_PROFILES,
       type:"SINGLE", text:"Which of these is a “want” rather than a “need”?",
       options:[["A","Rent for a room near your college or work"],["B","Groceries for cooking at home"],["C","Upgrading to a new phone while yours still works fine"],["D","A health insurance premium"]],
+      variants:{ RETIREE:{ options:[["A","Your regular medicines"],["B","Groceries for cooking at home"],["C","Upgrading to a new phone while yours still works fine"],["D","A health insurance premium"]] } },
       rubric:{ correct:"C", points:10 } },
     { code:"budgeting_savings_rate", category:"BUDGETING", weight:1, profiles:STUDENT_PROFESSIONAL,
       type:"NUMBER", text:"Roughly what percentage of your take-home income do you save or invest in a typical month?", unit:"% of take-home",
       hint:"Count SIPs, RDs, and money you move to savings. Leave out EPF — it's already taken out before your take-home.",
+      variants:{ STUDENT:{ text:"Roughly what share of the money you get each month do you save or invest?", unit:"% of what you get",
+        hint:"Count anything you put aside — money left in your savings account counts, and so does an SIP." } },
       rubric:{ numberThresholds:[{min:20,points:10},{min:10,points:6},{min:0,points:2}] } },
     { code:"budgeting_savings_rate_simple", category:"BUDGETING", weight:1, profiles:STUDENT_PROFESSIONAL, clarifies:"budgeting_savings_rate",
       type:"SINGLE", text:"Let's try it another way — at the end of a typical month, how much of your income is usually left over?",
+      variants:{ STUDENT:{ text:"Let's try it another way — at the end of a typical month, how much of your money is usually left over?" } },
       options:[["A","Nothing, or I overspend"],["B","A little — under a tenth of it"],["C","Somewhere between a tenth and a fifth"],["D","More than a fifth"]],
       valueMap:{ A:{number:0}, B:{number:5}, C:{number:15}, D:{number:25} } },
     { code:"budgeting_fixed_expenses", category:"BUDGETING", weight:1, profiles:["STUDENT"],
       type:"MULTI", text:"Which of these are usually fixed, hard-to-change monthly expenses? Select all that apply.", hint:"Select every option that applies.",
-      options:[["A","Rent"],["B","Movie outings"],["C","Loan EMI"],["D","Dining out"]],
+      options:[["A","Hostel or PG rent"],["B","Weekend outings"],["C","Mobile and internet plan"],["D","Food delivery"]],
       rubric:{ correctSet:["A","C"], points:10 } },
     { code:"budgeting_recurring_bills", category:"BUDGETING", weight:1, profiles:["PROFESSIONAL"],
       type:"SINGLE", text:"How do you handle recurring bills — rent, EMI, utilities — each month?",
@@ -1305,9 +1393,15 @@
     { code:"saving_emergency_fund_months", category:"SAVING", weight:2, profiles:ALL_PROFILES,
       type:"NUMBER", text:"How many months of essential expenses could you cover from money you can withdraw within a few days?", unit:"months",
       hint:"Count savings accounts, liquid funds and FDs you can break. Leave out stocks, PPF, EPF and gold.",
+      variants:{ STUDENT:{ text:"If you suddenly needed money — a broken phone, a doctor's visit, a trip home — how many months of your usual spending could you cover from your own savings, without asking anyone?",
+        hint:"Count savings you can get to within a few days. Money your family would step in with doesn't count here." },
+        RETIREE:{ hint:"Count savings accounts, liquid funds and FDs you can break early. Leave out money locked in SCSS, annuities, equity and gold." } },
       rubric:{ numberThresholds:[{min:6,points:10},{min:3,points:6},{min:1,points:3},{min:0,points:0}] } },
     { code:"saving_emergency_fund_simple", category:"SAVING", weight:2, profiles:ALL_PROFILES, clarifies:"saving_emergency_fund_months",
       type:"SINGLE", text:"Put simply: if your income stopped today, how long could you keep paying rent, food and bills from money you can get to quickly?",
+      variants:{ STUDENT:{ text:"Put simply: if your pocket money or stipend stopped, how long could your own savings cover your usual spending — phone, travel, food outside home?" },
+        RETIREE:{ text:"Put simply: if your pension or other income was held up, how long could you keep paying for food, medicines and bills from money you can get to quickly?" },
+        PROFESSIONAL:{ text:"Put simply: if you lost your job today, how long could you keep paying rent, EMIs, food and bills from money you can get to quickly?" } },
       options:[["A","Less than a month"],["B","1 to 3 months"],["C","3 to 6 months"],["D","More than 6 months"]],
       valueMap:{ A:{number:0}, B:{number:2}, C:{number:4}, D:{number:6} } },
     { code:"saving_emergency_fund_where", category:"SAVING", weight:1, profiles:ALL_PROFILES,
@@ -1324,14 +1418,25 @@
       type:"SINGLE", text:"What's the main purpose of an emergency fund?",
       options:[["A","Grow wealth quickly"],["B","Cover unexpected essential expenses without new debt"],["C","Pay for vacations"],["D","Maximise investment returns"]],
       rubric:{ correct:"B", points:10 } },
+    { code:"retiree_scam_digital_arrest", category:"SAVING", weight:1, profiles:["RETIREE"],
+      type:"SINGLE", text:"A video caller in uniform says your Aadhaar is linked to a crime, you're under \"digital arrest\", and you must transfer money to clear your name. What should you do?",
+      options:[["A","Pay quickly and quietly to avoid trouble"],["B","Hang up: no police or agency arrests anyone over a video call or asks for money — report it on 1930 or cybercrime.gov.in"],["C","Share your bank OTP so they can verify your account"],["D","Stay on the call and ask a family member to send the money"]],
+      rubric:{ correct:"B", points:10 } },
+    { code:"saving_upi_safety", category:"SAVING", weight:1, profiles:["STUDENT"],
+      type:"SINGLE", text:"A stranger says they sent you money by mistake and sends a UPI request asking you to return it. What should you do?",
+      options:[["A","Approve it and enter your UPI PIN — it's only fair"],["B","Don't approve it: you never need your PIN to receive money — check your bank app and report the request"],["C","Share the OTP they ask for so the bank can reverse it"],["D","Approve half the amount to be safe"]],
+      rubric:{ correct:"B", points:10 } },
     { code:"saving_automatic_transfer", category:"SAVING", weight:1, profiles:STUDENT_PROFESSIONAL,
       type:"SINGLE", text:"How do you usually save each month?",
       options:[["A","Whatever is left over, if anything"],["B","Occasionally, when I remember"],["C","A recurring deposit or SIP is set up"],["D","Saving is automated the day I get paid"]],
+      variants:{ STUDENT:{ options:[["A","Whatever is left over, if anything"],["B","Occasionally, when I remember"],["C","A recurring deposit or SIP is set up"],["D","I set some aside the day my allowance or stipend arrives"]] } },
       rubric:{ optionPoints:{A:0,B:3,C:7,D:10} } },
     { code:"saving_health_insurance", category:"SAVING", weight:1, profiles:STUDENT_PROFESSIONAL,
       type:"SINGLE", text:"What health insurance covers you today?",
       hint:"A parent's family floater that includes you counts as a family policy.",
       options:[["A","None"],["B","Only a policy through my employer or college"],["C","A personal or family floater policy"],["D","A personal or family policy, plus a top-up or super top-up"]],
+      variants:{ PROFESSIONAL:{ hint:"Your employer's group cover usually ends the day you leave the job — a policy of your own stays with you.",
+        options:[["A","None"],["B","Only my employer's group policy"],["C","A personal or family floater policy"],["D","A personal or family policy, plus a top-up or super top-up"]] } },
       rubric:{ optionPoints:{A:0,B:5,C:8,D:10} } },
     { code:"dependents", category:"SAVING", weight:1, profiles:["PROFESSIONAL"],
       type:"SINGLE", text:"How many people depend on your income — a partner, children or parents?",
@@ -1348,9 +1453,12 @@
     { code:"debt_high_interest_status", category:"DEBT", weight:2, profiles:ALL_PROFILES,
       type:"SINGLE", text:"Do you carry any high-interest debt — an unpaid credit card balance, or a personal or app-based loan above roughly 12% a year?",
       options:[["A","Yes"],["B","No — I pay my card in full each month, or have no such loans"]],
+      variants:{ STUDENT:{ text:"Do you owe money on a credit card, Buy Now Pay Later (BNPL) or an instant-loan app that you haven't fully paid off?",
+        options:[["A","Yes"],["B","No — or I don't use any of these"]] } },
       rubric:{ optionPoints:{A:0,B:10} } },
     { code:"debt_high_interest_simple", category:"DEBT", weight:2, profiles:ALL_PROFILES, clarifies:"debt_high_interest_status",
       type:"SINGLE", text:"In the last few months, have you paid only part of a credit card bill, or taken a personal or app-based loan?",
+      variants:{ STUDENT:{ text:"In the last few months, have you missed or only part-paid a credit card, Buy Now Pay Later or loan-app payment?" } },
       options:[["A","Yes"],["B","No — or I don't have a credit card or loans"]],
       valueMap:{ A:{selected:"A"}, B:{selected:"B"} } },
     { code:"debt_payoff_plan", category:"DEBT", weight:1, profiles:ALL_PROFILES,
@@ -1361,7 +1469,7 @@
       rubric:{ optionPoints:{A:0,B:2,C:7,D:10} } },
     { code:"debt_good_vs_bad", category:"DEBT", weight:1, profiles:["STUDENT"],
       type:"MULTI", text:"Which of these are usually considered “good debt” — the kind that can build long-term value? Select all that apply.", hint:"Select every option that applies.",
-      options:[["A","Home loan"],["B","Credit card revolving balance"],["C","Education loan"],["D","Payday loan"]],
+      options:[["A","An education loan for a recognised course"],["B","Buy Now Pay Later for the latest phone"],["C","A home loan, later in life"],["D","An instant-loan app for a weekend trip"]],
       rubric:{ correctSet:["A","C"], points:10 } },
     { code:"debt_interest_type", category:"DEBT", weight:1, profiles:["STUDENT"],
       type:"SINGLE", text:"A credit card typically charges roughly how much interest a year if you carry a balance?",
@@ -1392,9 +1500,11 @@
     // ---------------- RISK ----------------
     { code:"risk_market_drop_reaction", category:"RISK", weight:2, profiles:ALL_PROFILES,
       type:"SCALE", text:"If your investment portfolio dropped 20% in a month, how would you react?", scaleLabels:["Panic and sell everything","Stay invested, maybe buy more"],
+      variants:{ STUDENT:{ text:"Imagine ₹10,000 of your savings was invested, and a month later it's worth ₹8,000. How would you react?" } },
       rubric:{ scale:{1:0,2:3,3:6,4:8,5:10} } },
     { code:"risk_drop_rupees", category:"RISK", weight:2, profiles:ALL_PROFILES, clarifies:"risk_market_drop_reaction",
       type:"SINGLE", text:"Imagine you invested ₹1,00,000 and a month later it's worth ₹80,000. What would you most likely do?",
+      variants:{ STUDENT:{ text:"Imagine you invested ₹10,000 and a month later it's worth ₹8,000. What would you most likely do?" } },
       options:[["A","Sell everything before it falls further"],["B","Sell some of it"],["C","Leave it alone and wait"],["D","Invest a bit more while prices are low"]],
       valueMap:{ A:{scale:1}, B:{scale:2}, C:{scale:4}, D:{scale:5} } },
     { code:"risk_equity_experience", category:"RISK", weight:1, profiles:ALL_PROFILES,
@@ -1409,6 +1519,7 @@
       rubric:{ correct:"C", points:10 } },
     { code:"risk_horizon", category:"RISK", weight:2, profiles:STUDENT_PROFESSIONAL,
       type:"SINGLE", text:"When will you need most of the money you're saving or investing?",
+      variants:{ STUDENT:{ hint:"Think of your bigger plans — a laptop, a course, higher studies, moving city for a first job." } },
       options:[["A","Within a year"],["B","In 1 to 3 years"],["C","In 3 to 7 years"],["D","Not for 7 years or more"]],
       rubric:{ optionPoints:{A:2,B:4,C:7,D:10} } },
     { code:"retiree_inflation_awareness", category:"RISK", weight:1, profiles:["RETIREE"],
@@ -1425,12 +1536,10 @@
       type:"SINGLE", text:"Two people invest the same amount monthly. Person A starts at 25, Person B at 35; both stop at 45 and let it grow, untouched, at the same return. Who generally ends up with more?",
       options:[["A","Person A"],["B","Person B"],["C","They always end up equal"],["D","Impossible to know"]],
       rubric:{ correct:"A", points:10 } },
-    { code:"compounding_confidence", category:"COMPOUNDING", weight:1, profiles:["STUDENT"],
-      type:"SCALE", text:"Rate your confidence explaining how compound interest works to a friend.", scaleLabels:["Not at all","Very confident"],
-      rubric:{ scale:{1:0,2:3,3:5,4:8,5:10} } },
-    { code:"compounding_sip_step_up", category:"COMPOUNDING", weight:1, profiles:["PROFESSIONAL"],
-      type:"SCALE", text:"How familiar are you with “step-up SIPs” — increasing your monthly investment each year?", scaleLabels:["Never heard of it","Use it myself"],
-      rubric:{ scale:{1:0,2:3,3:5,4:8,5:10} } },
+    { code:"compounding_pay_rise", category:"COMPOUNDING", weight:1, profiles:["PROFESSIONAL"],
+      type:"SINGLE", text:"You get a 15% raise. What usually does the most for your long-term wealth?",
+      options:[["A","Upgrade your lifestyle by the full amount — you've earned it"],["B","Raise your SIP by part of the raise before your spending catches up"],["C","Leave the extra sitting in your savings account"],["D","Take a bigger loan now that you can afford a larger EMI"]],
+      rubric:{ optionPoints:{A:0,B:10,C:4,D:0} } },
     { code:"compounding_basics_probe", category:"COMPOUNDING", weight:1, profiles:ALL_PROFILES,
       askIf:function (eff, answers) { return knowledgeGap(answers, "COMPOUNDING"); },
       followUpReason:"Follow-up — checking the basics of compounding before we call it a gap.",
@@ -1447,6 +1556,10 @@
       type:"SINGLE", text:"As a student with limited money to invest, what's a reasonable way to start?",
       options:[["A","Wait until I have a large lump sum"],["B","Try to time the market for the perfect entry point"],["C","Start a small SIP in an index fund"],["D","Put everything into one hot stock tip"]],
       rubric:{ optionPoints:{A:2,B:0,C:10,D:0} } },
+    { code:"investing_scam_check", category:"INVESTING", weight:1, profiles:["STUDENT"],
+      type:"SINGLE", text:"A senior adds you to a Telegram group promising \"guaranteed 10% a month\" from trading or crypto. What's the best way to read it?",
+      options:[["A","Join fast — early members earn the most"],["B","Try a small amount first to test it"],["C","Treat it as a likely scam: no genuine investment can guarantee returns like that"],["D","It's fine if lots of people vouch for it"]],
+      rubric:{ correct:"C", points:10 } },
     { code:"investing_elss_lockin", category:"INVESTING", weight:1, advanced:true, profiles:["PROFESSIONAL"],
       type:"SINGLE", text:"What is the lock-in period for ELSS (tax-saving) mutual funds in India?",
       options:[["A","No lock-in"],["B","1 year"],["C","3 years"],["D","5 years"]],
@@ -1455,9 +1568,10 @@
       type:"MULTI", text:"Under the old tax regime, which of these can you claim as deductions under Section 80C? Select all that apply.", hint:"Select every option that applies. The new regime (the default since 2023) doesn't allow 80C.",
       options:[["A","PPF"],["B","ELSS mutual funds"],["C","Regular savings account"],["D","5-year tax-saver FD"]],
       rubric:{ correctSet:["A","B","D"], points:10 } },
-    { code:"investing_equity_debt_mix", category:"INVESTING", weight:1, advanced:true, profiles:["PROFESSIONAL"],
-      type:"SINGLE", text:"A common rule of thumb estimates your equity allocation as “100 minus your age”. Using that rule, roughly what equity share would a 30-year-old target?",
-      options:[["A","30%"],["B","50%"],["C","70%"],["D","90%"]],
+    { code:"investing_tax_regime", category:"INVESTING", weight:1, profiles:["PROFESSIONAL"],
+      type:"SINGLE", text:"Since FY 2025-26, under the new tax regime, a salaried person earning up to about how much a year pays no income tax at all?",
+      hint:"The new regime is the default; you can still choose the old one if your deductions (80C, HRA, home loan) are large.",
+      options:[["A","₹5 lakh"],["B","₹7.75 lakh"],["C","₹12.75 lakh"],["D","₹20 lakh"]],
       rubric:{ correct:"C", points:10 } },
     { code:"retiree_scss_awareness", category:"INVESTING", weight:1, profiles:["RETIREE"],
       type:"SINGLE", text:"What is the Senior Citizens' Savings Scheme (SCSS)?",
@@ -1481,11 +1595,16 @@
       rubric:{ correct:"C", points:10 } },
     { code:"retirement_readiness", category:"RETIREMENT", weight:1, profiles:PROFESSIONAL_RETIREE,
       type:"SCALE", text:"How confident are you that your current savings and investments are on track for retirement?", scaleLabels:["Not confident","Very confident"],
+      variants:{ RETIREE:{ text:"How confident are you that your savings and investments will last through your retirement?" } },
       rubric:{ scale:{1:0,2:3,3:5,4:8,5:10} } },
     { code:"retirement_nps_tax", category:"RETIREMENT", weight:1, advanced:true, profiles:["PROFESSIONAL"],
-      type:"SINGLE", text:"Under which section can NPS contributions get an extra tax benefit beyond the standard 80C limit?",
+      type:"SINGLE", text:"Under the old tax regime, which section gives an extra deduction of up to ₹50,000 for your own NPS contributions, beyond the ₹1.5 lakh 80C limit?",
       options:[["A","80D"],["B","80CCD(1B)"],["C","80G"],["D","80TTA"]],
       rubric:{ correct:"B", points:10 } },
+    { code:"retirement_epf_job_change", category:"RETIREMENT", weight:1, profiles:["PROFESSIONAL"],
+      type:"SINGLE", text:"When you change jobs, what's usually best to do with your EPF balance?",
+      options:[["A","Withdraw it — it's a nice bonus"],["B","Transfer it to your new employer's account using your UAN"],["C","Leave it in the old account and forget about it"],["D","Withdraw half, keep half"]],
+      rubric:{ optionPoints:{A:0,B:10,C:4,D:2} } },
     { code:"retirement_corpus_estimate", category:"RETIREMENT", weight:1, profiles:["PROFESSIONAL"],
       type:"NUMBER", text:"Roughly how many times your current annual expenses do you think you'll need saved by retirement?", unit:"× annual expenses",
       rubric:{ numberThresholds:[{min:20,points:10},{min:15,points:6},{min:10,points:3},{min:0,points:0}] } },
@@ -1495,17 +1614,29 @@
     { code:"retiree_healthcare_fund", category:"RETIREMENT", weight:1, profiles:["RETIREE"],
       type:"SINGLE", text:"Do you have a dedicated health insurance or medical emergency fund, separate from your main retirement corpus?",
       options:[["A","No"],["B","I've been meaning to"],["C","Yes, a small one"],["D","Yes, sized for a major medical event"]],
-      rubric:{ optionPoints:{A:0,B:3,C:7,D:10} } }
+      rubric:{ optionPoints:{A:0,B:3,C:7,D:10} } },
+    { code:"retiree_withdrawal_rate", category:"RETIREMENT", weight:1, profiles:["RETIREE"],
+      type:"SINGLE", text:"Roughly what share of your savings can you withdraw each year, so they're likely to last 25–30 years?",
+      options:[["A","About 1%"],["B","About 3–4%"],["C","About 8–10%"],["D","About 15%"]],
+      rubric:{ correct:"B", points:10 } },
+    { code:"retiree_nomination_will", category:"RETIREMENT", weight:1, profiles:["RETIREE"],
+      type:"SINGLE", text:"Have you added nominees to your bank accounts, FDs and investments, and made a will?",
+      options:[["A","Neither"],["B","Nominees on some accounts, no will"],["C","Nominees on all accounts, but no will yet"],["D","Nominees everywhere, and a will"]],
+      rubric:{ optionPoints:{A:0,B:3,C:6,D:10} } },
+    { code:"retiree_form_15h", category:"RETIREMENT", weight:1, advanced:true, profiles:["RETIREE"],
+      type:"SINGLE", text:"If your total income is below the taxable limit, which form stops your bank deducting tax (TDS) from your FD interest?",
+      options:[["A","Form 15G"],["B","Form 15H"],["C","Form 16"],["D","Form 26AS"]],
+      rubric:{ correct:"B", points:10 } }
   ];
 
   // Raised from a flat 15: the question bank is now split into a shared
   // core plus a distinct set per profile, and 15 wasn't enough headroom for
   // a profile's exclusive questions to ever actually be reached — they'd
-  // always be crowded out by the shared ones. 29 covers every profile's base
+  // always be crowded out by the shared ones. 30 covers every profile's base
   // pool in full (PROFESSIONAL is the largest), so no category — Retirement,
   // last in order — silently drops out of anyone's score. Follow-ups and
   // skipped advanced questions move the real length up or down from there.
-  var MAX_QUESTIONS = 29;
+  var MAX_QUESTIONS = 30;
 
   /* =====================================================================
      ENGINE — ported from the real backend's algorithms (QuestionnaireService,
@@ -1734,6 +1865,11 @@
     debt_good_vs_bad: "good vs. bad debt",
     debt_interest_type: "what credit cards really charge",
     debt_student_loan_interest: "how education-loan interest builds up while you study",
+    saving_upi_safety: "staying safe on UPI",
+    retiree_scam_digital_arrest: "spotting \"digital arrest\" scams",
+    retiree_withdrawal_rate: "a safe yearly withdrawal rate",
+    retiree_form_15h: "Form 15H for tax on FD interest",
+    investing_scam_check: "spotting \"guaranteed return\" scams",
     debt_loan_priority: "which loan to repay first",
     risk_volatility_understanding: "which investments swing the most",
     retiree_inflation_awareness: "inflation risk in retirement",
@@ -1743,7 +1879,7 @@
     investing_index_fund_def: "what index funds do",
     investing_elss_lockin: "the ELSS lock-in",
     investing_80c_options: "Section 80C options",
-    investing_equity_debt_mix: "setting an equity/debt mix",
+    investing_tax_regime: "the new tax regime's ₹12.75 lakh zero-tax limit",
     investing_basics_probe: "diversification",
     retiree_scss_awareness: "the Senior Citizens' Savings Scheme",
     retiree_swp_def: "systematic withdrawal plans (SWP)",
@@ -1788,14 +1924,20 @@
     retiree_inflation_awareness: "Inflation",
     compounding_rule_of_72: "Rule of 72",
     compounding_early_start: "Compound interest",
-    compounding_confidence: "Compound interest",
-    compounding_sip_step_up: "Systematic investment plan",
+    saving_upi_safety: "Unified Payments Interface",
+    retiree_scam_digital_arrest: "Digital arrest scam",
+    retiree_withdrawal_rate: "Trinity study",
+    retiree_nomination_will: "Will and testament",
+    retiree_form_15h: "Tax deduction at source",
+    investing_scam_check: "Ponzi scheme",
+    compounding_pay_rise: "Lifestyle creep",
+    retirement_epf_job_change: "Employees' Provident Fund Organisation",
     compounding_basics_probe: "Compound interest",
     investing_index_fund_def: "Index fund",
     investing_first_step: "Dollar-cost averaging",
     investing_elss_lockin: "Equity Linked Savings Scheme",
     investing_80c_options: "Income tax in India",
-    investing_equity_debt_mix: "Asset allocation",
+    investing_tax_regime: "Income tax in India",
     investing_basics_probe: "Diversification (finance)",
     retiree_scss_awareness: "India Post",
     retiree_swp_def: "Retirement spend-down",
@@ -1865,6 +2007,7 @@
       runwayYears: num("retiree_runway_years"), runwayAsked: !!a.retiree_runway_years,
       retireeDebt: sel("retiree_debt_in_retirement"),
       healthFund: sel("retiree_healthcare_fund"),
+      nomination: sel("retiree_nomination_will"),
       missedTopics: missedTopics
     };
   }
@@ -1876,7 +2019,7 @@
    * least 10% of income. Null when income isn't known.
    */
   function monthlyWaterfall(snap) {
-    if (snap.income === null) return null;
+    if (!snap.income) return null; // not shared, or nothing coming in regularly
     var budget = snap.income * Math.max(snap.savingsRate, 10) / 100;
     var debtShare = snap.highInterestDebt ? 0.5 : 0;
     var efShare = snap.efGap > 0 ? (debtShare ? 0.25 : 0.5) : 0;
@@ -2616,7 +2759,7 @@
     var worstLabel = CATEGORY_META[tb.worst[0]].label.toLowerCase();
     var profileNoun = profile === "STUDENT" ? "as a student" : profile === "RETIREE" ? "in retirement" : "at your career stage";
     var flow = monthlyWaterfall(snap);
-    var incomeKnown = snap.income !== null;
+    var incomeKnown = snap.income !== null && snap.income > 0;
 
     var opener = pick([
       "You scored " + result.total + " out of 100.",
@@ -2712,7 +2855,10 @@
     }
     if (profile === "PROFESSIONAL") {
       var taxMissed = snap.missedTopics.some(function (t) { return t.code === "investing_80c_options" || t.code === "investing_elss_lockin" || t.code === "retirement_nps_tax"; });
-      if (taxMissed)
+      var regimeMissed = snap.missedTopics.some(function (t) { return t.code === "investing_tax_regime"; });
+      if (regimeMissed)
+        nextSteps.push("Compare both tax regimes before your employer's declaration deadline: under the new regime, salaried income up to ₹12.75 lakh pays no tax, while the old one only wins if your deductions are large.");
+      else if (taxMissed)
         nextSteps.push("If you're on the old tax regime, check 80C (up to ₹1.5 lakh a year) and NPS under 80CCD(1B) (₹50,000 more) before the financial year ends.");
       if (snap.spend !== null) {
         var corpus = snap.spend * 12 * 25;
@@ -2734,6 +2880,8 @@
         nextSteps.push("You expect your corpus to last about " + Math.round(snap.runwayYears) + " years — test a slightly lower monthly withdrawal against a 25–30 year retirement.");
       if (snap.healthFund === "A" || snap.healthFund === "B" || snap.healthFund === "?")
         nextSteps.push("Set aside a medical fund separate from your corpus, or top up health cover, so one hospital bill can't force a sale.");
+      if (snap.nomination && snap.nomination !== "D")
+        nextSteps.push("Add nominees on every bank account, FD and investment, and write a will — it spares your family months of paperwork and disputes.");
     }
     if (nextSteps.length < 2)
       nextSteps.push("Put one concrete number behind " + worstLabel + " this month — an amount, a date, or an account, not just an intention.");
@@ -2817,6 +2965,7 @@
     riskNarrative: null,
     riskNarrativeBand: null,
     restoreAnswer: null,
+    profileBeforeChange: null,
     mixTab: "fund-mix",
     plan: { amount: 0, years: 10, vehicles: ["mf", "direct"], stepUp: 0 }
   };
@@ -2901,7 +3050,50 @@
   });
   $("profile-continue-btn").addEventListener("click", enterApp);
 
+  /* ---------------- CHANGE PROFILE ----------------
+     Reopens the profile picker from the dashboard with the current profile
+     selected. Picking a different one starts that profile fresh: its
+     questions, scoring and plan are all different, so results from the
+     old profile can't carry over. Earlier results stay in the dashboard
+     history, labelled with the profile they were taken as. */
+
+  function openProfilePicker() {
+    state.profileBeforeChange = state.profile;
+    showScreen("auth");
+    showProfileStep();
+    document.querySelectorAll("#profile-pick-group .profile-pick-card").forEach(function (c) {
+      c.classList.toggle("selected", c.getAttribute("data-value") === state.profile);
+    });
+    $("profile-continue-btn").disabled = false;
+    $("profile-cancel-btn").style.display = "";
+    syncPressedStates();
+    var current = document.querySelector("#profile-pick-group .profile-pick-card.selected");
+    if (current) current.focus();
+  }
+
+  $("change-profile-btn").addEventListener("click", openProfilePicker);
+  $("profile-cancel-btn").addEventListener("click", function () {
+    state.profile = state.profileBeforeChange || state.profile;
+    enterApp();
+  });
+
+  /** Clears everything tied to the previous profile's assessment. */
+  function resetForNewProfile() {
+    state.answers = {};
+    state.lastScore = null;
+    state.lastRisk = null;
+    state.selectedBand = null;
+    state.scoreNarrative = null;
+    state.riskNarrative = null;
+    state.plan.initialised = false;
+    ["score", "risk", "invest"].forEach(function (n) { $("rail-nav").querySelector('[data-nav="' + n + '"]').disabled = true; });
+  }
+
   function enterApp() {
+    if (state.profileBeforeChange && state.profileBeforeChange !== state.profile) resetForNewProfile();
+    state.profileBeforeChange = null;
+    $("profile-cancel-btn").style.display = "none";
+    $("dash-profile-name").textContent = { STUDENT: "student", PROFESSIONAL: "working professional", RETIREE: "retiree" }[state.profile];
     $("profile-chip-text").textContent = PROFILE_LABELS[state.profile];
     $("profile-chip").querySelector(".avatar").textContent = PROFILE_LABELS[state.profile].charAt(0);
     showScreen("dashboard");
@@ -3125,9 +3317,16 @@
     loadQuestion();
   }
 
+  /** The question as this profile should see it: variant wording merged over the base. */
+  function presented(q) {
+    var v = q.variants && q.variants[state.profile];
+    return v ? Object.assign({}, q, v) : q;
+  }
+
   function loadQuestion() {
     var q = nextEligibleQuestion(state.answers, state.profile);
     if (!q) { runAnalysis(); return; }
+    q = presented(q);
     state.currentQuestion = q;
     state.currentValue = null;
 
@@ -3469,9 +3668,9 @@
   }
 
   function snapshotTiles(snap) {
-    var incomeKnown = snap.income !== null;
+    var incomeKnown = snap.income !== null && snap.income > 0;
     var tiles = [
-      { l: "Monthly income", n: incomeKnown ? formatINR(snap.income) : "Not shared" },
+      { l: "Monthly income", n: incomeKnown ? formatINR(snap.income) : snap.income === 0 ? "None regular" : "Not shared" },
       { l: "Saving each month", n: incomeKnown ? formatINR(roundTo(snap.saving, 100)) : Math.round(snap.savingsRate) + "%",
         hint: incomeKnown ? Math.round(snap.savingsRate) + "% of income" + (snap.rateKnown ? "" : ", assumed") : (snap.rateKnown ? "of income" : "assumed") },
       { l: "Est. monthly spending", n: incomeKnown ? formatINR(roundTo(snap.spend, 100)) : "—" },
@@ -3715,11 +3914,14 @@
   /**
    * What's left for investing once high-interest debt and the emergency-fund
    * gap have had their share of this month's saving (see monthlyWaterfall).
-   * Falls back to a flat ₹5,000 when income wasn't shared.
+   * Without an income figure it falls back to ₹500 (no regular income),
+   * ₹1,000 (a student who didn't share it) or ₹5,000 (anyone else).
    */
   function suggestedMonthlyAmount(snap) {
     var flow = monthlyWaterfall(snap);
-    return flow ? flow.toInvest : 5000;
+    if (flow) return flow.toInvest;
+    if (snap.income === 0) return MIN_SIP; // no regular income: start at the smallest SIP
+    return snap.profile === "STUDENT" ? 1000 : 5000; // income not shared: a typical starting SIP for the profile
   }
 
   /** The ordered monthly steps ({intro, items:[{t, d, amt}]}), shared by the screen and the PDF. */
@@ -3727,7 +3929,9 @@
     var flow = monthlyWaterfall(snap);
     var items = [];
     var intro = !flow
-      ? "You didn't share your income, so these are in order of priority without rupee amounts."
+      ? (snap.income === 0
+        ? "You don't have a regular income yet, so there are no monthly amounts — but the same order applies to any money that comes your way, like a gift or your first stipend."
+        : "You didn't share your income, so these are in order of priority without rupee amounts.")
       : "Of the " + formatINR(roundTo(flow.budget, 100)) + " a month you can set aside (" +
         Math.round(Math.max(snap.savingsRate, 10)) + "% of income), here's where each rupee should go first.";
     if (snap.highInterestDebt || snap.highInterestDebt === null) {
@@ -3949,6 +4153,11 @@
   }
 
   /** A small emphasis line chart: projected value (gold, solid) vs. amount invested (gray, dashed). */
+  /** A theme token's current value, for SVG attributes that can't use var(). */
+  function themeColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
   function renderGrowthChart(plan) {
     var svg = $("growth-chart");
     svg.innerHTML = "";
@@ -3968,8 +4177,8 @@
     // gridlines + y labels (0, half, max)
     [0, 0.5, 1].forEach(function (f) {
       var gy = y(maxVal * f);
-      svg.appendChild(svgEl("line", { x1: padL, x2: W - padR, y1: gy, y2: gy, stroke: "rgba(244,239,226,0.10)", "stroke-width": 1 }));
-      var label = svgEl("text", { x: padL - 10, y: gy + 4, "text-anchor": "end", "font-size": 10.5, fill: "#9a9282", "font-family": "IBM Plex Mono, monospace" });
+      svg.appendChild(svgEl("line", { x1: padL, x2: W - padR, y1: gy, y2: gy, stroke: themeColor("--glass-edge"), "stroke-width": 1 }));
+      var label = svgEl("text", { x: padL - 10, y: gy + 4, "text-anchor": "end", "font-size": 10.5, fill: themeColor("--ink-3"), "font-family": "IBM Plex Mono, monospace" });
       // Compact (5.9L, 1.2Cr) so large amounts fit the left margin; the exact
       // figure is on the end-point label and in the headline above.
       label.textContent = compactINR(maxVal * f);
@@ -3978,7 +4187,7 @@
 
     // x labels (year 0, mid, end)
     [0, Math.round((series.length - 1) / 2), series.length - 1].forEach(function (i) {
-      var label = svgEl("text", { x: x(i), y: H - 8, "text-anchor": i === 0 ? "start" : (i === series.length - 1 ? "end" : "middle"), "font-size": 10.5, fill: "#9a9282" });
+      var label = svgEl("text", { x: x(i), y: H - 8, "text-anchor": i === 0 ? "start" : (i === series.length - 1 ? "end" : "middle"), "font-size": 10.5, fill: themeColor("--ink-3") });
       label.textContent = "Yr " + series[i].year;
       svg.appendChild(label);
     });
@@ -3992,8 +4201,8 @@
     var gradId = "growthFill";
     var defs = svgEl("defs", {});
     var grad = svgEl("linearGradient", { id: gradId, x1: "0", y1: "0", x2: "0", y2: "1" });
-    var s1 = svgEl("stop", { offset: "0%", "stop-color": "#f0c569", "stop-opacity": "0.35" });
-    var s2 = svgEl("stop", { offset: "100%", "stop-color": "#f0c569", "stop-opacity": "0" });
+    var s1 = svgEl("stop", { offset: "0%", "stop-color": themeColor("--gold-bright"), "stop-opacity": "0.35" });
+    var s2 = svgEl("stop", { offset: "100%", "stop-color": themeColor("--gold-bright"), "stop-opacity": "0" });
     grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
     svg.appendChild(svgEl("path", { d: areaD, fill: "url(#" + gradId + ")", stroke: "none" }));
 
@@ -4006,13 +4215,13 @@
     }
 
     // invested (dashed, muted) then value (solid, gold) on top
-    svg.appendChild(svgEl("path", { d: pathFor("invested"), fill: "none", stroke: "#9a9282", "stroke-width": 2, "stroke-dasharray": "5,5" }));
-    svg.appendChild(svgEl("path", { d: pathFor("value"), fill: "none", stroke: "#f0c569", "stroke-width": 2.5, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+    svg.appendChild(svgEl("path", { d: pathFor("invested"), fill: "none", stroke: themeColor("--ink-3"), "stroke-width": 2, "stroke-dasharray": "5,5" }));
+    svg.appendChild(svgEl("path", { d: pathFor("value"), fill: "none", stroke: themeColor("--gold-bright"), "stroke-width": 2.5, "stroke-linecap": "round", "stroke-linejoin": "round" }));
 
     // endpoint markers + value labels
     var lastI = series.length - 1;
-    svg.appendChild(svgEl("circle", { cx: x(lastI), cy: y(series[lastI].value), r: 4, fill: "#f0c569" }));
-    var endLabel = svgEl("text", { x: Math.min(x(lastI), W - padR - 90), y: y(series[lastI].value) - 10, "font-size": 11.5, fill: "#f4efe2", "font-family": "IBM Plex Mono, monospace", "font-weight": "600" });
+    svg.appendChild(svgEl("circle", { cx: x(lastI), cy: y(series[lastI].value), r: 4, fill: themeColor("--gold-bright") }));
+    var endLabel = svgEl("text", { x: Math.min(x(lastI), W - padR - 90), y: y(series[lastI].value) - 10, "font-size": 11.5, fill: themeColor("--ink-1"), "font-family": "IBM Plex Mono, monospace", "font-weight": "600" });
     endLabel.textContent = formatINR(series[lastI].value);
     svg.appendChild(endLabel);
   }
@@ -4499,6 +4708,35 @@
       $("download-report-label").textContent = "Download report (PDF)";
     });
   });
+
+  /* ---------------- LIGHT / DARK THEME ----------------
+     Dark is the default. The choice is remembered in localStorage and
+     applied by a one-line script in <head> before the page paints. */
+
+  var THEME_KEY = "money-compass-theme";
+
+  function currentTheme() { return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"; }
+
+  function syncThemeToggles() {
+    var next = currentTheme() === "light" ? "dark" : "light";
+    document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
+      b.setAttribute("aria-label", "Switch to " + next + " mode");
+      b.setAttribute("title", "Switch to " + next + " mode");
+    });
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* not remembered, still applied */ }
+    syncThemeToggles();
+    // The growth chart draws its colours into SVG attributes, so redraw it.
+    if (state.lastRisk && $("view-invest").style.display !== "none") renderInvest();
+  }
+
+  document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
+    b.addEventListener("click", function () { setTheme(currentTheme() === "light" ? "dark" : "light"); });
+  });
+  syncThemeToggles();
 
   /* ---------------- INIT ---------------- */
 
