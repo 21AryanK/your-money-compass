@@ -496,7 +496,8 @@
   .score-hero-text p { color: var(--ink-2); font-size: 13.5px; max-width: 380px; }
   .sample-tag { display:inline-flex; align-items:center; gap:6px; font-size: 11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color: var(--ink-3); background: var(--well); border:1px solid var(--glass-edge); padding: 4px 10px; border-radius: 999px; margin-bottom: 14px; }
 
-  .breakdown-row { display: grid; grid-template-columns: 148px 1fr 40px; align-items: center; gap: 14px; padding: 9px 0; }
+  .breakdown-row { display: grid; grid-template-columns: 148px 1fr 40px 64px; grid-template-areas: "label track pct learn"; align-items: center; gap: 14px; padding: 9px 0; }
+  .breakdown-row .cat-label { grid-area: label; } .breakdown-row .breakdown-track { grid-area: track; } .breakdown-row .breakdown-pct { grid-area: pct; } .breakdown-row .breakdown-learn { grid-area: learn; }
   .breakdown-row .cat-label { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
   .breakdown-row .cat-label .dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
   .breakdown-track { height: 9px; border-radius: 5px; background: var(--well-strong); overflow: hidden; }
@@ -703,8 +704,16 @@
     .rail-link .short { display: block; }
     .main { padding: 14px 14px 110px; }
     .q-card { padding: 26px 20px; }
+    /* Back / Next stay in reach: pinned just above the bottom nav while the
+       question runs past the screen, back in place at the end of the card.
+       Near-solid, like the popover above, since the card's blur can't reach
+       through a sticky child. */
+    .q-footer { position: sticky; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+      margin: 26px -20px -26px; padding: 14px 20px; border-radius: 0 0 var(--r-lg) var(--r-lg);
+      background: linear-gradient(158deg, rgba(30, 40, 36, 0.97), rgba(16, 26, 23, 0.97)); }
+    :root[data-theme="light"] .q-footer { background: linear-gradient(158deg, rgba(255, 255, 255, 0.97), rgba(246, 242, 234, 0.97)); }
     .score-hero { flex-direction: column; text-align: center; }
-    .breakdown-row { grid-template-columns: 1fr; row-gap: 6px; }
+    .breakdown-row { grid-template-columns: 1fr auto auto; grid-template-areas: "label learn pct" "track track track"; row-gap: 6px; }
     .breakdown-row .cat-label { justify-content: space-between; }
   }
 
@@ -763,6 +772,7 @@
   .chat-chip { padding: 6px 11px; border-radius: 999px; border: 1px solid var(--glass-edge); background: var(--glass-fill); color: var(--ink-2);
     font-size: 12px; cursor: pointer; text-align: left; }
   .chat-chip:hover { color: var(--ink-1); border-color: var(--gold); }
+  .chat-chip-action { color: var(--gold-bright); border-color: rgba(217,165,74,0.55); background: rgba(217,165,74,0.1); font-weight: 700; }
   .ask-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--glass-edge); }
   .ask-form input { flex: 1; min-width: 0; background: var(--well); border: 1px solid var(--glass-edge); color: var(--ink-1); border-radius: 999px; padding: 10px 14px; font: inherit; font-size: 13.5px; }
   .ask-form input:focus { outline: none; border-color: var(--gold); }
@@ -784,6 +794,148 @@
   }
   body.ask-locked { overflow: hidden; }
   @media (prefers-reduced-motion: reduce) { .typing span, .ask-head .orb-sm { animation: none; } }
+
+  /* ---------------------------------------------------------------------
+     BEGINNER HELP — "Simple mode". Everything here is additive: the
+     existing screens work the same with it off.
+     --------------------------------------------------------------------- */
+  .simple-toggle { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px 0 12px; border-radius: 999px;
+    color: var(--ink-1); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .simple-toggle:hover { color: var(--gold-bright); }
+  .simple-toggle .sw { width: 30px; height: 18px; border-radius: 999px; background: var(--well-strong); border: 1px solid var(--glass-edge); position: relative; transition: background 0.2s var(--ease); }
+  .simple-toggle .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-3); transition: transform 0.2s var(--ease), background 0.2s var(--ease); }
+  .simple-toggle[aria-pressed="true"] .sw { background: rgba(217,165,74,0.3); border-color: var(--gold); }
+  .simple-toggle[aria-pressed="true"] .sw::after { transform: translateX(12px); background: var(--gold-bright); }
+  @media (max-width: 560px) { .simple-toggle .simple-toggle-label { display: none; } .simple-toggle { padding: 0 10px; } }
+
+  .comfort-pick { margin-top: 18px; }
+  .comfort-q { font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+  .comfort-note { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+
+  /* The per-question explainer */
+  .q-explain { margin: -8px 0 22px; border: 1px solid rgba(52,171,132,0.35); background: rgba(52,171,132,0.07); border-radius: var(--r-md); }
+  .q-explain > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--teal-bright); }
+  .q-explain > summary::-webkit-details-marker { display: none; }
+  .q-explain > summary .chev { margin-left: auto; transition: transform 0.2s var(--ease); }
+  .q-explain[open] > summary .chev { transform: rotate(180deg); }
+  .q-explain-body { padding: 0 14px 14px; }
+  .q-explain-body p { font-size: 14px; color: var(--ink-1); line-height: 1.6; }
+  .q-explain-note { margin-top: 10px; font-size: 12.5px !important; color: var(--ink-3) !important; }
+  .q-words { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .q-words-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin-right: 2px; }
+  .term-chip { padding: 5px 11px; border-radius: 999px; border: 1px dashed var(--glass-edge-bright); background: var(--glass-fill); color: var(--ink-1); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .term-chip:hover, .term-chip:focus-visible { border-color: var(--gold); color: var(--gold-bright); }
+
+  /* Inline jargon: a dotted underline you can tap for a definition */
+  .term { background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; cursor: help; text-align: inherit;
+    text-decoration: underline dotted var(--gold); text-decoration-thickness: 1.5px; text-underline-offset: 3px; display: inline; line-height: inherit; }
+  .term:hover, .term:focus-visible { color: var(--gold-bright); }
+  .term-pop { position: fixed; z-index: 80; width: min(320px, calc(100vw - 24px)); padding: 14px 16px; }
+  .term-pop.glass { background: linear-gradient(158deg, rgba(30, 40, 36, 0.98), rgba(16, 26, 23, 0.98)); }
+  :root[data-theme="light"] .term-pop.glass { background: linear-gradient(158deg, rgba(255, 255, 255, 0.99), rgba(246, 242, 234, 0.99)); }
+  .term-pop h4 { font-size: 14.5px; margin-bottom: 6px; padding-right: 24px; }
+  .term-pop p { font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+  .term-pop .term-pop-close { position: absolute; top: 8px; right: 8px; background: none; border: 0; color: var(--ink-3); font-size: 18px; cursor: pointer; width: 28px; height: 28px; border-radius: 8px; }
+  .term-pop .term-pop-close:hover { background: var(--glass-fill); color: var(--ink-1); }
+  .term-pop .text-link { margin-top: 10px; display: inline-block; font-size: 12px; }
+
+  /* Only-in-simple-mode content, and advanced cards that fold away in it */
+  [data-simple-only] { display: none; }
+  body.simple [data-simple-only] { display: block; }
+  body.simple .how-steps[data-simple-only] { display: flex; }
+  .adv-toggle { display: none; width: 100%; margin-top: 16px; align-items: center; gap: 10px; padding: 14px 18px; border-radius: var(--r-md);
+    border: 1px dashed var(--glass-edge-bright); background: transparent; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; text-align: left; }
+  .adv-toggle:hover { color: var(--ink-1); background: var(--glass-fill); }
+  .adv-toggle .adv-sub { font-weight: 500; color: var(--ink-3); font-size: 12.5px; }
+  .adv-toggle .chev { margin-left: auto; flex-shrink: 0; transition: transform 0.2s var(--ease); }
+  .adv-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  body.simple .adv-toggle { display: flex; }
+  body.simple [data-advanced]:not(.adv-open) { display: none; }
+
+  .plain-card { border-color: rgba(52,171,132,0.4); }
+  .plain-card .plain-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal-bright); margin-bottom: 8px; }
+  .plain-card h3 { font-size: 18px !important; margin-bottom: 10px !important; }
+  .plain-card p { font-size: 14.5px; color: var(--ink-2); line-height: 1.65; margin-top: 8px; }
+  .plain-card p b, .plain-card li b { color: var(--ink-1); }
+  .plain-split { list-style: none; padding: 0; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+  .plain-split li { display: grid; grid-template-columns: 58px 1fr; gap: 12px; align-items: baseline; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+  .plain-split .amt { font-family: var(--font-mono); font-weight: 600; color: var(--ink-1); text-align: right; }
+  .plain-split .sw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 7px; vertical-align: 1px; }
+  .plain-steps { margin: 10px 0 0 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+  .plain-howto { margin-top: 16px; border-top: 1px solid var(--glass-edge); padding-top: 12px; }
+  .plain-howto > summary { cursor: pointer; font-size: 13.5px; font-weight: 700; color: var(--gold-bright); }
+  .plain-howto ol { margin: 10px 0 0 20px; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+
+  .breakdown-learn { font-size: 11.5px; justify-self: end; white-space: nowrap; }
+
+  /* Review your answers */
+  .review-card > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .review-card > summary::-webkit-details-marker { display: none; }
+  .review-card > summary h3 { margin: 0 !important; }
+  .review-card > summary .review-count { font-size: 13px; color: var(--ink-3); }
+  .review-card > summary .chev { margin-left: auto; transition: transform 0.2s var(--ease); color: var(--ink-3); }
+  .review-card[open] > summary .chev { transform: rotate(180deg); }
+  .review-intro { font-size: 13px; color: var(--ink-3); margin: 12px 0 4px; }
+  .review-item { padding: 14px 0; border-top: 1px solid var(--glass-edge); }
+  .review-item:first-of-type { border-top: 0; }
+  .review-q { font-size: 14px; font-weight: 600; color: var(--ink-1); display: flex; gap: 10px; align-items: flex-start; }
+  .review-mark { flex-shrink: 0; width: 22px; height: 22px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+  .review-mark.ok { background: rgba(47,191,79,0.16); color: var(--status-good); }
+  .review-mark.part { background: rgba(232,171,47,0.16); color: var(--status-warn); }
+  .review-mark.no { background: rgba(226,104,90,0.16); color: var(--status-critical); }
+  .review-mark.unk { background: var(--well-strong); color: var(--ink-3); }
+  .review-a { margin: 6px 0 0 32px; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .review-a b { color: var(--ink-1); }
+  .review-why { margin: 6px 0 0 32px; font-size: 13px; color: var(--ink-2); line-height: 1.6; padding: 8px 12px; border-radius: 10px; background: var(--well); }
+
+  /* Lessons */
+  .lesson-intro { font-size: 13.5px; color: var(--ink-2); margin: -4px 0 12px; }
+  .lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .lesson-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; text-align: left; cursor: pointer; font: inherit; color: var(--ink-1); border-radius: var(--r-md); }
+  .lesson-card:hover { border-color: var(--gold); }
+  .lesson-card .lc-cat { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
+  .lesson-card .lc-cat .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .lesson-card .lc-title { font-size: 14.5px; font-weight: 700; line-height: 1.35; }
+  .lesson-card .lc-meta { margin-top: auto; font-size: 12px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+  .lesson-card.done .lc-meta { color: var(--status-good); }
+  .how-steps { display: flex; gap: 8px 18px; flex-wrap: wrap; margin-top: 14px; padding: 0; list-style: none; counter-reset: hs; }
+  .how-steps li { counter-increment: hs; font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+  .how-steps li::before { content: counter(hs); width: 22px; height: 22px; border-radius: 7px; background: var(--well-strong); color: var(--gold-bright); font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Modal: lessons and the glossary */
+  .mc-modal-backdrop { position: fixed; inset: 0; z-index: 70; background: rgba(2, 8, 6, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .mc-modal-backdrop[hidden] { display: none; }
+  .mc-modal { width: min(640px, 100%); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; overflow: hidden; }
+  .mc-modal.glass { background: linear-gradient(158deg, rgba(30, 40, 36, 0.98), rgba(16, 26, 23, 0.98)); }
+  :root[data-theme="light"] .mc-modal.glass { background: linear-gradient(158deg, rgba(255, 255, 255, 0.99), rgba(246, 242, 234, 0.99)); }
+  .mc-modal-head { display: flex; align-items: flex-start; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--glass-edge); }
+  .mc-modal-head h2 { font-size: 21px; line-height: 1.3; }
+  .mc-modal-head .mc-sub { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+  .mc-modal-close { margin-left: auto; background: none; border: 0; color: var(--ink-3); font-size: 22px; cursor: pointer; width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; }
+  .mc-modal-close:hover { background: var(--glass-fill); color: var(--ink-1); }
+  .mc-modal-body { padding: 18px 22px 22px; overflow-y: auto; overscroll-behavior: contain; }
+  .mc-modal-body p { font-size: 14.5px; color: var(--ink-2); line-height: 1.7; margin-bottom: 12px; }
+  .lesson-example { padding: 12px 14px; border-radius: var(--r-md); background: var(--well); border: 1px solid var(--glass-edge); font-size: 14px; color: var(--ink-1); line-height: 1.6; margin: 4px 0 12px; }
+  .lesson-example .lx-label, .lesson-check .lx-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 4px; }
+  .lesson-takeaway { font-size: 14px !important; color: var(--ink-1) !important; font-weight: 600; border-left: 3px solid var(--gold); padding-left: 12px; }
+  .lesson-check { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--glass-edge); }
+  .lesson-check .lc-q { font-size: 15px; font-weight: 700; color: var(--ink-1); margin-bottom: 10px; }
+  .lesson-check .options { gap: 8px; }
+  .lesson-check .option { padding: 12px 14px; font-size: 14px; }
+  .lesson-check .option.right { background: rgba(47,191,79,0.12); border-color: var(--status-good); }
+  .lesson-check .option.wrong { background: rgba(226,104,90,0.1); border-color: var(--status-critical); }
+  .lesson-check .option:disabled { cursor: default; }
+  .lesson-feedback { margin-top: 12px; font-size: 14px; color: var(--ink-1); line-height: 1.6; }
+  .mc-modal-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; padding: 14px 22px; border-top: 1px solid var(--glass-edge); }
+  .gloss-search { width: 100%; background: var(--well); border: 1px solid var(--glass-edge); color: var(--ink-1); border-radius: 999px; padding: 11px 16px; font: inherit; font-size: 14px; margin-bottom: 14px; }
+  .gloss-search:focus { outline: none; border-color: var(--gold); }
+  .gloss-list { display: flex; flex-direction: column; }
+  .gloss-item { padding: 12px 0; border-top: 1px solid var(--glass-edge); }
+  .gloss-item:first-child { border-top: 0; }
+  .gloss-item h4 { font-size: 14.5px; margin-bottom: 4px; }
+  .gloss-item p { font-size: 13.5px !important; margin: 0 !important; }
+  .gloss-empty { font-size: 13.5px; color: var(--ink-3); }
+  body.modal-open { overflow: hidden; }
 </style>
 </head>
 <body>
@@ -862,6 +1014,14 @@
           <span class="ppc-text"><span class="ppc-title">Retired</span><span class="ppc-desc">Preserving what you've built. We'll weight your plan toward capital protection over growth.</span></span>
         </button>
       </div>
+      <div class="comfort-pick">
+        <p class="comfort-q" id="comfort-label">How familiar are you with words like SIP, FD or index fund?</p>
+        <div class="segmented" role="group" aria-labelledby="comfort-label" id="comfort-group">
+          <button type="button" data-simple="on" aria-pressed="true">New to most of them</button>
+          <button type="button" data-simple="off" aria-pressed="false">I know the basics</button>
+        </div>
+        <p class="comfort-note">"New" turns on Simple mode: plain-language explanations and definitions throughout. You can switch it any time.</p>
+      </div>
       <button type="button" class="btn btn-primary btn-block" id="profile-continue-btn" disabled style="margin-top:18px;">Continue</button>
       <button type="button" class="btn btn-ghost btn-block" id="profile-cancel-btn" style="display:none; margin-top:10px;">Keep my current profile</button>
     </div>
@@ -928,6 +1088,10 @@
         <h1 id="topbar-title">Dashboard</h1>
       </div>
       <div class="topbar-actions">
+        <button type="button" class="glass simple-toggle" id="simple-toggle" aria-pressed="false" title="Plain-language explanations, definitions for money words, and short summaries">
+          <span class="sw" aria-hidden="true"></span><span class="simple-toggle-label">Simple mode</span>
+        </button>
+        <button type="button" class="glass theme-toggle" id="glossary-btn" aria-label="Glossary: money words explained" title="Glossary: money words explained"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 012-2h13v15H6a2 2 0 00-2 2zm0 0A2 2 0 006 22h13"/><path d="M9 8h6M9 11.5h4"/></svg></button>
         <button type="button" class="glass theme-toggle" data-theme-toggle aria-label="Switch to light mode" title="Switch to light mode"><svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg><svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 019.8 3.5a8.5 8.5 0 1010.7 10.7z"/></svg></button>
         <div class="glass profile-chip" id="profile-chip">
           <span class="avatar">S</span>
@@ -943,6 +1107,11 @@
           <h2>Know where your money habits actually stand.</h2>
           <p>A short adaptive assessment, a deterministic literacy score, and an AI-written explanation of what it means — with a risk profile and suggested allocation to follow.</p>
           <p class="dash-profile-line">Your questions are set up for a <b id="dash-profile-name">student</b>.</p>
+          <ol class="how-steps" data-simple-only>
+            <li>Answer about 25 questions (8 to 10 minutes)</li>
+            <li>See what you know, in plain words</li>
+            <li>Get a simple plan for your money</li>
+          </ol>
         </div>
         <div class="hero-actions">
           <button class="btn btn-primary" data-action="start-questionnaire">Start assessment</button>
@@ -1000,6 +1169,10 @@
         <button class="btn btn-primary" data-action="start-questionnaire" id="dash-empty-btn">Take the assessment</button>
       </div>
 
+      <div class="section-title">Money basics in 2 minutes each</div>
+      <p class="lesson-intro">New to money matters? These short lessons explain the ideas behind the questions, each with a quick check at the end. They're optional: you can start the assessment any time.</p>
+      <div class="lesson-grid" id="lesson-grid"></div>
+
       <div class="section-title">How scoring works here</div>
       <div class="grid grid-2">
         <div class="glass card">
@@ -1034,8 +1207,20 @@
           </a>
         </div>
         <div class="q-body">
-          <h2 class="q-text" id="q-text" tabindex="-1">—</h2>
-          <p class="q-hint" id="q-hint" style="display:none;"></p>
+          <h2 class="q-text" id="q-text" tabindex="-1" data-glossify>—</h2>
+          <p class="q-hint" id="q-hint" style="display:none;" data-glossify></p>
+          <details class="q-explain" id="q-explain" style="display:none;">
+            <summary>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 015 .8c0 1.8-2.5 2.2-2.5 3.8M12 17h.01"/></svg>
+              <span>What does this mean?</span>
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="q-explain-body">
+              <p id="q-explain-text" data-glossify></p>
+              <div class="q-words" id="q-words"></div>
+              <p class="q-explain-note">Not sure? "I don't know" is a perfectly good answer. It tells us what to explain in your results.</p>
+            </div>
+          </details>
           <div id="q-answer-area"></div>
         </div>
         <div class="q-footer">
@@ -1079,6 +1264,11 @@
         </div>
       </div>
 
+      <div class="glass card plain-card" id="plain-score" data-simple-only style="margin-top:16px;">
+        <span class="plain-eyebrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>In plain words</span>
+        <div id="plain-score-body" data-glossify></div>
+      </div>
+
       <div class="glass card" style="margin-top:16px;">
         <h3 style="margin-bottom:16px;">Category breakdown</h3>
         <div id="breakdown-list"></div>
@@ -1103,11 +1293,11 @@
             </button>
           </div>
         </div>
-        <p class="narrative-summary" id="narrative-summary"></p>
+        <p class="narrative-summary" id="narrative-summary" data-glossify></p>
         <div class="narrative-cols">
-          <div class="narrative-col col-strengths"><h4 style="color:var(--status-good);">Strengths</h4><ul id="narrative-strengths"></ul></div>
-          <div class="narrative-col col-gaps"><h4 style="color:var(--status-warn);">Gaps</h4><ul id="narrative-gaps"></ul></div>
-          <div class="narrative-col col-next"><h4 style="color:var(--gold-bright);">Next steps</h4><ul id="narrative-next"></ul></div>
+          <div class="narrative-col col-strengths"><h4 style="color:var(--status-good);">Strengths</h4><ul id="narrative-strengths" data-glossify></ul></div>
+          <div class="narrative-col col-gaps"><h4 style="color:var(--status-warn);">Gaps</h4><ul id="narrative-gaps" data-glossify></ul></div>
+          <div class="narrative-col col-next"><h4 style="color:var(--gold-bright);">Next steps</h4><ul id="narrative-next" data-glossify></ul></div>
         </div>
         <div class="response-actions" data-actions="score">
           <button type="button" class="icon-btn" data-fb="up" aria-label="Helpful" title="Helpful">👍</button>
@@ -1120,6 +1310,16 @@
         <p class="disclaimer">Educational content only, written in part by an AI model. This is not financial advice.</p>
       </div>
 
+      <details class="glass card review-card" id="review-card" style="margin-top:16px;">
+        <summary>
+          <h3>Review your answers</h3>
+          <span class="review-count" id="review-count"></span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <p class="review-intro">The questions that test knowledge, with the right answer and why. Questions about your own situation have no right answer, so they aren't listed.</p>
+        <div id="review-list" data-glossify></div>
+      </details>
+
       <div class="risk-cta-row">
         <button class="btn btn-primary" data-action="goto-risk">See your risk profile →</button>
         <button class="btn btn-ghost" data-action="restart">Retake assessment</button>
@@ -1128,6 +1328,10 @@
 
     <!-- ---------------- RISK ---------------- -->
     <section id="view-risk" class="stage" style="display:none;">
+      <div class="glass card plain-card" id="plain-risk" data-simple-only style="margin-bottom:16px;">
+        <span class="plain-eyebrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>In plain words</span>
+        <div id="plain-risk-body" data-glossify></div>
+      </div>
       <div class="grid grid-2">
         <div class="glass card stat-tile">
           <span class="label">Risk tolerance</span>
@@ -1143,10 +1347,10 @@
         </div>
       </div>
 
-      <div class="glass card" style="margin-top:16px;">
+      <div class="glass card" style="margin-top:16px;" data-advanced data-advanced-label="How we worked out your capacity" data-advanced-sub="each answer that raised or lowered it">
         <h3 style="margin-bottom:4px;">How we worked out your capacity</h3>
         <p style="font-size:13px; color:var(--ink-3); margin-bottom:10px;">Each of your answers that affects how well you could ride out a downturn, and by how much.</p>
-        <div id="capacity-factors"></div>
+        <div id="capacity-factors" data-glossify></div>
       </div>
 
       <div class="glass card" style="margin-top:16px;">
@@ -1189,10 +1393,10 @@
             </button>
           </div>
         </div>
-        <p class="narrative-summary" id="risk-rationale"></p>
+        <p class="narrative-summary" id="risk-rationale" data-glossify></p>
         <div class="narrative-cols narrative-cols-2">
-          <div class="narrative-col col-strengths"><h4 style="color:var(--teal-bright);">Worth considering</h4><ul id="risk-considerations"></ul></div>
-          <div class="narrative-col col-gaps"><h4 style="color:var(--status-warn);">Worth avoiding</h4><ul id="risk-avoid"></ul></div>
+          <div class="narrative-col col-strengths"><h4 style="color:var(--teal-bright);">Worth considering</h4><ul id="risk-considerations" data-glossify></ul></div>
+          <div class="narrative-col col-gaps"><h4 style="color:var(--status-warn);">Worth avoiding</h4><ul id="risk-avoid" data-glossify></ul></div>
         </div>
         <div class="response-actions" data-actions="risk">
           <button type="button" class="icon-btn" data-fb="up" aria-label="Helpful" title="Helpful">👍</button>
@@ -1213,10 +1417,24 @@
 
     <!-- ---------------- INVESTMENT PLANNER ---------------- -->
     <section id="view-invest" class="stage" style="display:none;">
+      <div class="glass card plain-card" id="plain-invest" data-simple-only style="margin-bottom:16px;">
+        <span class="plain-eyebrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>In plain words</span>
+        <div id="plain-invest-body" data-glossify></div>
+        <details class="plain-howto">
+          <summary>First time investing? How to actually start</summary>
+          <ol data-glossify>
+            <li><b>Complete KYC once</b> with your PAN and Aadhaar. Any fund house, broker or investment app can do it online in a few minutes.</li>
+            <li><b>Choose the "Direct" plan</b> of a fund. It's the same fund as "Regular" with lower fees, because no distributor takes a cut. For most beginners, a Nifty 50 index fund is a simple first choice.</li>
+            <li><b>Set up a SIP</b> for a date a few days after your money arrives, so it's invested before it can be spent.</li>
+            <li><b>Don't stop when markets fall.</b> Your SIP buys more units while prices are low. Check in once or twice a year, not every day.</li>
+            <li><b>Stay safe:</b> never share an OTP or UPI PIN, and ignore anyone promising "guaranteed" high returns.</li>
+          </ol>
+        </details>
+      </div>
       <div class="glass card" id="priority-card" style="margin-bottom:16px;">
         <h3 style="margin-bottom:4px;">Your monthly money, in order</h3>
         <p style="font-size:13px; color:var(--ink-3); margin-bottom:6px;" id="priority-intro"></p>
-        <ol class="priority-list" id="priority-list"></ol>
+        <ol class="priority-list" id="priority-list" data-glossify></ol>
       </div>
 
       <div class="glass card">
@@ -1315,7 +1533,7 @@
         <div id="plan-instrument-list"></div>
       </div>
 
-      <div class="glass card" id="mix-tabs-card" style="margin-top:16px;">
+      <div class="glass card" id="mix-tabs-card" style="margin-top:16px;" data-advanced data-advanced-label="Fund-by-fund breakdown" data-advanced-sub="exactly which kinds of fund each part goes into">
         <h3 style="margin-bottom:4px;">Fund-by-fund breakdown</h3>
         <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;">Where each part of the plan above actually goes.</p>
         <div class="mix-tabs horizon-row" role="tablist" aria-label="Breakdown by part of the plan" id="mix-tabs">
@@ -1330,9 +1548,9 @@
           <h3 style="margin-bottom:4px;">Your mutual fund mix</h3>
           <a class="text-link" href="https://en.wikipedia.org/wiki/Market_capitalization" target="_blank" rel="noopener noreferrer">What do large, mid and small cap mean? ↗</a>
         </div>
-        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="fund-mix-intro"></p>
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="fund-mix-intro" data-glossify></p>
         <div id="fund-mix-list"></div>
-        <ul class="fund-mix-notes" id="fund-mix-notes"></ul>
+        <ul class="fund-mix-notes" id="fund-mix-notes" data-glossify></ul>
       </div>
 
       <div class="mix-panel" id="direct-mix-card" role="tabpanel" aria-labelledby="tab-direct-mix" hidden>
@@ -1340,9 +1558,9 @@
           <h3 style="margin-bottom:4px;">Your direct shares, by sector</h3>
           <a class="text-link" href="https://en.wikipedia.org/wiki/NIFTY_50" target="_blank" rel="noopener noreferrer">What's in the Nifty 50? ↗</a>
         </div>
-        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="direct-mix-intro"></p>
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="direct-mix-intro" data-glossify></p>
         <div id="direct-mix-list"></div>
-        <ul class="fund-mix-notes" id="direct-mix-notes"></ul>
+        <ul class="fund-mix-notes" id="direct-mix-notes" data-glossify></ul>
       </div>
 
       <div class="mix-panel" id="debt-mix-card" role="tabpanel" aria-labelledby="tab-debt-mix" hidden>
@@ -1350,9 +1568,9 @@
           <h3 style="margin-bottom:4px;">Your debt mix: deposits and debt funds</h3>
           <a class="text-link" href="https://en.wikipedia.org/wiki/Bond_fund" target="_blank" rel="noopener noreferrer">What is a debt fund? ↗</a>
         </div>
-        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="debt-mix-intro"></p>
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="debt-mix-intro" data-glossify></p>
         <div id="debt-mix-list"></div>
-        <ul class="fund-mix-notes" id="debt-mix-notes"></ul>
+        <ul class="fund-mix-notes" id="debt-mix-notes" data-glossify></ul>
       </div>
 
       <div class="mix-panel" id="gold-mix-card" role="tabpanel" aria-labelledby="tab-gold-mix" hidden>
@@ -1360,9 +1578,9 @@
           <h3 style="margin-bottom:4px;">Your gold mix: ETF and Sovereign Gold Bonds</h3>
           <a class="text-link" href="https://en.wikipedia.org/wiki/Sovereign_Gold_Bond" target="_blank" rel="noopener noreferrer">What is a Sovereign Gold Bond? ↗</a>
         </div>
-        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="gold-mix-intro"></p>
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="gold-mix-intro" data-glossify></p>
         <div id="gold-mix-list"></div>
-        <ul class="fund-mix-notes" id="gold-mix-notes"></ul>
+        <ul class="fund-mix-notes" id="gold-mix-notes" data-glossify></ul>
       </div>
 
       <div class="mix-panel" id="cash-mix-card" role="tabpanel" aria-labelledby="tab-cash-mix" hidden>
@@ -1370,9 +1588,9 @@
           <h3 style="margin-bottom:4px;">Your cash mix: savings account and liquid fund</h3>
           <a class="text-link" href="https://en.wikipedia.org/wiki/Money_market_fund" target="_blank" rel="noopener noreferrer">What is a liquid (money market) fund? ↗</a>
         </div>
-        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="cash-mix-intro"></p>
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px;" id="cash-mix-intro" data-glossify></p>
         <div id="cash-mix-list"></div>
-        <ul class="fund-mix-notes" id="cash-mix-notes"></ul>
+        <ul class="fund-mix-notes" id="cash-mix-notes" data-glossify></ul>
       </div>
       </div>
 
@@ -1398,13 +1616,30 @@
       </div>
       <div class="ask-log" id="ask-log" aria-live="polite"></div>
       <form class="ask-form" id="ask-form" autocomplete="off">
-        <input id="ask-input" type="text" placeholder="Ask about your score, risk or plan…" aria-label="Your question" maxlength="300" />
+        <input id="ask-input" type="text" placeholder="Ask about your results, a goal, a loan, or say “quiz me”…" aria-label="Your question" maxlength="300" />
         <button type="submit" id="ask-send">Send</button>
       </form>
       <div class="ask-foot">Educational answers from your own numbers — not financial advice.</div>
     </div>
     <footer class="site-footer">Built with <span role="img" aria-label="love">❤️</span> in India by <a href="https://www.linkedin.com/in/aryan-kumar-3369041aa/" target="_blank" rel="noopener noreferrer" aria-label="@Aryan on LinkedIn (opens in a new tab)">@Aryan</a></footer>
   </main>
+</div>
+
+<div class="mc-modal-backdrop" id="mc-modal" hidden>
+  <div class="glass mc-modal" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
+    <div class="mc-modal-head">
+      <div><h2 id="mc-modal-title"></h2><div class="mc-sub" id="mc-modal-sub"></div></div>
+      <button type="button" class="mc-modal-close" id="mc-modal-close" aria-label="Close">×</button>
+    </div>
+    <div class="mc-modal-body" id="mc-modal-body"></div>
+    <div class="mc-modal-foot" id="mc-modal-foot"></div>
+  </div>
+</div>
+<div class="glass term-pop" id="term-pop" role="dialog" aria-labelledby="term-pop-title" hidden>
+  <button type="button" class="term-pop-close" id="term-pop-close" aria-label="Close">×</button>
+  <h4 id="term-pop-title"></h4>
+  <p id="term-pop-text"></p>
+  <button type="button" class="text-link" id="term-pop-all">See all money words →</button>
 </div>
 
 <script>
@@ -3656,6 +3891,7 @@
   }
 
   function renderDashboard() {
+    renderLessonGrid();
     var history = loadHistory();
     var mine = history.filter(function (h) { return h.profile === state.profile; });
     var latest = mine[mine.length - 1] || history[history.length - 1];
@@ -3851,6 +4087,7 @@
     }
     $("q-hint").style.display = q.hint ? "" : "none";
     $("q-hint").textContent = q.hint || "";
+    renderQuestionHelp(q);
     $("q-back").disabled = answeredCount === 0;
     $("q-next").disabled = true;
     renderAnswerArea(q);
@@ -4121,12 +4358,15 @@
   function startConversation() {
     assistantFor = state.lastScore;
     assistantAsked = {};
+    assistantCtx = null;
+    assistantQuiz = null;
+    assistantQuizzed = {};
     $("ask-log").innerHTML = "";
     var snap = state.lastRisk.snapshot;
     var hello = "Hi — I've read through your " + Object.keys(state.answers).length + " answers. You scored " + state.lastScore.total +
       "/100, and we're planning around a " + activeBand().toLowerCase() + " risk profile" +
       (snap.income ? " on an income of about " + formatAmount(snap.income) + " a month" : "") +
-      ". Ask me anything about your results — why a number came out the way it did, what to do first, or what-ifs like \u201cwhat if I invest \u20b95,000 a month for 15 years?\u201d";
+      ". Ask me anything about your results, or let me plan a goal, work out a loan, compare options, change your plan or quiz you. Type \u201cwhat can you do?\u201d for the full list.";
     addBubble("bot", hello);
     addChips(starterChips());
   }
@@ -4135,15 +4375,16 @@
     var snap = state.lastRisk.snapshot, flow = monthlyWaterfall(snap);
     var amt = flow ? Math.max(1000, roundTo(flow.toInvest * 2, 1000)) : 5000;
     var byScreen = {
-      score: ["What should I do first?", "Why is my score " + state.lastScore.total + "?", "How big should my emergency fund be?"],
+      score: ["What should I do first?", "Why is my score " + state.lastScore.total + "?", "Quiz me"],
       risk: ["Why am I in the " + activeBand().toLowerCase() + " band?", "What happens in a market crash?", "Should I take more risk?"],
-      invest: ["Where should my monthly investment go?", "What if I invest " + formatINR(amt) + " a month for 15 years?", "How do I stay on track?"]
+      invest: ["Where should my monthly investment go?", "How much to save for " + formatINR(snap.income ? roundTo(snap.income * 6, 10000) : 200000) + " in 3 years?", "How do I stay on track?"]
     };
     var chips = (byScreen[assistantScreen] || byScreen.score).slice();
     if (snap.highInterestDebt) chips.push("How do I clear my debt?");
     else if (state.profile === "PROFESSIONAL") chips.push("How can I save tax?");
     else if (state.profile === "RETIREE") chips.push("Will my money last?");
     else chips.push("What if I invest " + formatINR(amt) + " a month for 15 years?");
+    if (isSimple()) chips.splice(1, 0, { score: "What is compounding?", risk: "What is equity?", invest: "What is a SIP?" }[assistantScreen] || "What is a SIP?");
     return chips;
   }
 
@@ -4159,16 +4400,23 @@
   function addChips(list) {
     var old = $("ask-log").querySelector(".chat-chips");
     if (old) old.remove();
-    list = list.filter(function (q, i) { return list.indexOf(q) === i; }).slice(0, 4);
+    var labelOf = function (c) { return typeof c === "string" ? c : c.label; };
+    var labels = list.map(labelOf);
+    list = list.filter(function (c, i) { return labels.indexOf(labelOf(c)) === i; }).slice(0, 4);
     if (!list.length) return;
     var wrap = document.createElement("div");
     wrap.className = "chat-chips";
     list.forEach(function (q) {
       var c = document.createElement("button");
       c.type = "button";
-      c.className = "chat-chip";
-      c.textContent = q;
-      c.addEventListener("click", function () { if (!assistantBusy) askAssistant(q); });
+      c.className = "chat-chip" + (typeof q === "string" ? "" : " chat-chip-action");
+      c.textContent = labelOf(q);
+      c.addEventListener("click", function () {
+        if (assistantBusy) return;
+        if (typeof q === "string") { askAssistant(q); return; }
+        wrap.remove();
+        q.run();
+      });
       wrap.appendChild(c);
     });
     $("ask-log").appendChild(wrap);
@@ -4204,7 +4452,7 @@
         meta.className = "chat-meta";
         meta.textContent = "llama3.1:8b · " + ((Date.now() - started) / 1000).toFixed(1) + "s · " + estimateTokens(reply.text) + " tokens";
         $("ask-log").appendChild(meta);
-        addChips(reply.chips.filter(function (c) { return !assistantAsked[c.toLowerCase()]; }));
+        addChips(reply.chips.filter(function (c) { return typeof c !== "string" || !assistantAsked[c.toLowerCase()]; }));
         assistantBusy = false;
         $("ask-send").disabled = false;
         scrollLog();
@@ -4249,6 +4497,435 @@
     { re: /inflation/, term: "inflation", text: "Inflation is the rise in prices over time — assumed at " + INFLATION_PCT + "% a year here. It means \u20b91 lakh today buys only about " + formatAmount(100000 / Math.pow(1 + INFLATION_PCT / 100, 10)) + " worth of things in 10 years, so money needs to grow just to stand still." }
   ];
 
+  /* ---- More skills ----
+     Each one is plain calculation over the app's own figures (the same
+     return, inflation and tax assumptions as the planner), phrased as a
+     chat reply. A reply's chips can be questions or actions: an action chip
+     is { label, run } and does something on click instead of asking. */
+
+  var assistantCtx = null;    // the last calculation, so "what about 15 years?" can redo it
+  var assistantQuiz = null;   // the practice question waiting for an answer
+  var assistantQuizzed = {};  // practice questions already asked this conversation
+
+  /** Every rupee amount in the text, in order: 5000, ₹5,000, 5k, 1.5 lakh, 2 crore. Percentages and durations are left out. */
+  function parseAmounts(q) {
+    var s = q.replace(/(\d+(?:\.\d+)?)\s*%/g, " ")
+      .replace(/(\d+(?:\.\d+)?)\s*(?:years?|yrs?|months?|mos?)\b/g, " ")
+      .replace(/\b(?:by|in|until|till|before)\s+(?:19|20)\d\d\b/g, " ")
+      .replace(/\b(?:age|aged)\s*\d+/g, " ");
+    var re = /(\d[\d,]*(?:\.\d+)?)\s*(k|thousand|lakhs?|lacs?|l|crores?|cr)?\b/g, m, out = [];
+    while ((m = re.exec(s))) {
+      var n = parseFloat(m[1].replace(/,/g, "")), u = m[2] || "";
+      if (/^(k|thousand)$/.test(u)) n *= 1e3;
+      else if (/^(lakhs?|lacs?|l)$/.test(u)) n *= 1e5;
+      else if (/^(crores?|cr)$/.test(u)) n *= 1e7;
+      if (n >= 100) out.push(Math.round(n));
+    }
+    return out;
+  }
+
+  /** Years in the text: "5 years", "18 months", or "by 2030". Null if none. */
+  function parseYears(q) {
+    var y = q.match(/(\d+(?:\.\d+)?)\s*(?:years?|yrs?)\b/);
+    if (y) return parseFloat(y[1]);
+    var mo = q.match(/(\d+)\s*months?\b/);
+    if (mo) return parseInt(mo[1], 10) / 12;
+    var by = q.match(/\b(?:by|in|until|till|before)\s+((?:19|20)\d\d)\b/);
+    if (by) return Math.max(1, parseInt(by[1], 10) - new Date().getFullYear());
+    return null;
+  }
+
+  function parsePercent(q) {
+    var m = q.match(/(\d+(?:\.\d+)?)\s*%/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  function yearsText(y) {
+    if (y < 1) { var mo = Math.round(y * 12); return mo + " month" + (mo === 1 ? "" : "s"); }
+    var r = Math.round(y * 10) / 10;
+    return r + " year" + (r === 1 ? "" : "s");
+  }
+
+  /** The return to plan a goal around: money needed soon shouldn't be in shares. */
+  function goalRate(years, blended) {
+    if (years < 3) return { rate: ASSUMED_RATES.fd, where: "an RD, FD or liquid fund. That's too short a time for shares, which can be down just when you need the money" };
+    if (years < 7) return { rate: Math.min(blended, (ASSUMED_RATES.fd + ASSUMED_RATES.mf) / 2), where: "a mix leaning on FDs and debt funds, with some equity" };
+    return { rate: blended, where: "your " + activeBand().toLowerCase() + " mix" };
+  }
+
+  /* ---- Instruments for side-by-side comparisons ---- */
+  var COMPARE = [
+    { id: "fd", name: "Fixed deposit (FD)", re: /\bfds?\b|fixed deposits?|\brds?\b|recurring deposits?/, ret: ASSUMED_RATES.fd,
+      risk: "Very low; insured up to ₹5 lakh per bank", access: "Locked for the term; breaking early usually costs 0.5–1%",
+      tax: "Interest taxed at your slab every year", best: "money you'll need in 1–3 years" },
+    { id: "savings", name: "Savings account", re: /savings? accounts?|bank accounts?/, ret: 3,
+      risk: "None", access: "Any day", tax: "Interest taxed at your slab", best: "day-to-day money and the first month of your emergency fund" },
+    { id: "liquid", name: "Liquid fund", re: /liquid funds?/, ret: 6,
+      risk: "Very low", access: "Usually the next working day (up to ₹50,000 instantly)", tax: "Gains taxed at your slab", best: "most of an emergency fund" },
+    { id: "ppf", name: "PPF", re: /\bppf\b|public provident/, ret: 7.1,
+      risk: "Government-backed", access: "15-year lock-in; partial withdrawals from year 7", tax: "Tax-free interest; deposits count under 80C (old regime)", best: "safe long-term savings" },
+    { id: "elss", name: "ELSS", re: /\belss\b|tax[- ]saving (mutual )?funds?/, ret: ASSUMED_RATES.mf,
+      risk: "High: moves with the stock market", access: "3-year lock-in for each instalment", tax: "80C deduction (old regime); gains above ₹1.25 lakh a year taxed at 12.5%", best: "saving tax on the old regime with a long horizon" },
+    { id: "equity", name: "Equity / index fund", re: /index funds?|mutual funds?|\bmfs?\b|equity funds?|\bequity\b|stock market/, ret: ASSUMED_RATES.mf,
+      risk: "High in the short term; a 20–30% fall in a bad year is normal", access: "Any working day (money arrives in 2–3 days)", tax: "12.5% on gains above ₹1.25 lakh a year after a year; 20% within a year", best: "goals 7 or more years away" },
+    { id: "debtfund", name: "Debt fund", re: /debt funds?|bond funds?|\bbonds?\b/, ret: 7,
+      risk: "Low to moderate", access: "Usually 1–3 working days", tax: "Gains taxed at your slab", best: "3–5 year goals" },
+    { id: "gold", name: "Gold (ETF / SGB)", re: /\bgold\b|\bsgbs?\b/, ret: ASSUMED_RATES.gold,
+      risk: "Moderate; often rises when shares fall", access: "Gold ETFs: any trading day", tax: "12.5% on gains held over a year (ETFs); SGBs held to maturity are tax-free", best: "a 5–15% slice for balance, not a whole plan" },
+    { id: "nps", name: "NPS", re: /\bnps\b|national pension/, ret: 10,
+      risk: "Moderate; you choose the equity share (up to 75%)", access: "Mostly locked until 60", tax: "Extra ₹50,000 deduction under 80CCD(1B) (old regime); 60% tax-free at 60", best: "retirement savings with a tax break" },
+    { id: "direct", name: "Direct shares", re: /direct (equity|shares|stocks)|individual (stocks|shares)|\bshares\b|\bstocks?\b/, ret: ASSUMED_RATES.direct,
+      risk: "Very high; one company can halve in a year", access: "Any trading day", tax: "Same as equity funds", best: "people with the time and interest to research companies" }
+  ];
+
+  function compareReply(q, snap) {
+    var found = COMPARE.filter(function (c) { return c.re.test(q); });
+    if (found.length < 2) return null;
+    found = found.slice(0, 3);
+    var years = parseYears(q) || snap.horizonYears || state.plan.years || 10;
+    var monthly = parseAmounts(q)[0] || (state.plan.amount > 0 ? state.plan.amount : 5000);
+    var blocks = found.map(function (c) {
+      return c.name + "\n• Return: about " + c.ret + "% a year (assumed)\n• Risk: " + c.risk + "\n• Access: " + c.access +
+        "\n• Tax: " + c.tax + "\n• Suits: " + c.best + "\n• " + formatINR(monthly) + " a month for " + yearsText(years) + " → about " +
+        formatAmount(sipFutureValue(monthly, c.ret, years)) + " before tax";
+    });
+    var safest = found.slice().sort(function (a, b) { return a.ret - b.ret; })[0], growth = found.slice().sort(function (a, b) { return b.ret - a.ret; })[0];
+    var verdict = years < 3
+      ? "For money needed within " + yearsText(years) + ", " + safest.name + " is the sensible pick: a higher return means nothing if a fall hits just before you need it."
+      : years >= 7
+        ? "Over " + yearsText(years) + ", " + growth.name + " has the most room to grow, and there's time to ride out bad years. Many people hold both: " + growth.name + " for growth, " + safest.name + " for stability."
+        : "At " + yearsText(years) + " it's a middle ground: many people split between them, leaning safer as the date gets closer.";
+    return { text: "Here's how they compare, using " + formatINR(monthly) + " a month over " + yearsText(years) + ":\n\n" + blocks.join("\n\n") + "\n\n" + verdict +
+      "\n\nReturns are illustrative long-run averages, not promises.", chips: ["Where should my monthly investment go?", "What happens in a market crash?"] };
+  }
+
+  /* ---- Changing the plan from the chat ---- */
+  var HORIZONS = [1, 3, 5, 10, 15, 20], STEPUPS = [0, 5, 10];
+  function nearest(list, v) { return list.reduce(function (best, x) { return Math.abs(x - v) < Math.abs(best - v) ? x : best; }, list[0]); }
+
+  function refreshAfterPlanChange(bandChanged) {
+    saveProgress();
+    if (bandChanged) { renderBandPicker(); renderActiveBand(); }
+    if ($("view-invest").style.display !== "none") initInvestScreen();
+  }
+
+  function openPlanAction() {
+    return { label: "Open my plan →", run: function () { if (isPhone()) closeAssistant(); showScreen("invest"); initInvestScreen(); } };
+  }
+
+  function planChangeReply(q, snap) {
+    if (!has2(q, /\b(set|change|make|update|switch|use|increase|decrease|raise|lower|reduce|bump|move|go with)\b/)) return null;
+    if (has2(q, /\bshould\b|\bwhy\b|what if/)) return null;
+    var changes = {}, notes = [];
+    var amount = parseAmounts(q)[0];
+    if (amount && has2(q, /sip|amount|monthly|a month|per month|\/month|invest|plan/)) changes.amount = amount;
+    var y = parseYears(q);
+    if (y && has2(q, /horizon|years?|yrs?|plan|for|months?|by/)) {
+      var snapped = nearest(HORIZONS, y);
+      if (snapped !== y) notes.push("The planner offers 1, 3, 5, 10, 15 or 20 years, so I used " + snapped + ".");
+      changes.years = snapped;
+    }
+    if (has2(q, /no step[- ]?up|flat|remove (the )?step[- ]?up|stop (the )?step[- ]?up/)) changes.stepUp = 0;
+    else {
+      var su = q.match(/step[- ]?up[^0-9]*(\d+)\s*%|(\d+)\s*%\s*(?:a year|yearly|every year|each year|step)/);
+      if (su) {
+        var pct = parseFloat(su[1] || su[2]), s2 = nearest(STEPUPS, pct);
+        if (s2 !== pct) notes.push("Step-up can be 0, 5 or 10% a year, so I used " + s2 + "%.");
+        changes.stepUp = s2;
+      }
+    }
+    var bandWord = q.match(/\b(conservative|moderate|balanced|growth|aggressive)\b/);
+    if (bandWord) changes.band = bandWord[1].toUpperCase();
+    else if (has2(q, /(calculated|original|suggested|recommended|my own) (band|profile)/)) changes.band = null;
+    if (has2(q, /only (mutual )?funds|no direct|without direct|remove direct|drop direct/)) changes.vehicles = ["mf"];
+    else if (has2(q, /only direct/)) changes.vehicles = ["direct"];
+    else if (has2(q, /(add|include|with) direct/)) changes.vehicles = ["mf", "direct"];
+    if (!Object.keys(changes).length) return null;
+
+    if (!state.plan.initialised) {
+      state.plan.amount = suggestedMonthlyAmount(snap);
+      if (snap.horizonYears) state.plan.years = snap.horizonYears;
+      state.plan.initialised = true;
+    }
+    var before = { plan: JSON.parse(JSON.stringify(state.plan)), band: state.selectedBand };
+    if ("amount" in changes) state.plan.amount = changes.amount;
+    if ("years" in changes) state.plan.years = changes.years;
+    if ("stepUp" in changes) state.plan.stepUp = changes.stepUp;
+    if ("vehicles" in changes) state.plan.vehicles = changes.vehicles;
+    var bandChanged = "band" in changes;
+    if (bandChanged) state.selectedBand = changes.band;
+    refreshAfterPlanChange(bandChanged);
+
+    var plan = computeInvestmentPlan(state.plan.amount, state.plan.years, activeAllocation(), state.plan.vehicles, activeBand(), snap, { stepUp: state.plan.stepUp });
+    var text = "Done. Your plan is now " + formatINR(state.plan.amount) + " a month for " + yearsText(state.plan.years) +
+      (state.plan.stepUp ? ", rising " + state.plan.stepUp + "% a year" : "") + ", planned around " + (/^[AEIOU]/.test(activeBand()) ? "an " : "a ") + activeBand().toLowerCase() + " profile" +
+      (state.plan.vehicles.length === 1 ? " using " + (state.plan.vehicles[0] === "mf" ? "mutual funds only" : "direct shares only") + " for equity" : "") + ".\n\n" +
+      "• Projected value: about " + formatAmount(plan.totalProjected) + "\n• You'd put in " + formatAmount(plan.totalInvested) +
+      "\n• Likely range: " + formatAmount(plan.totalLow) + " to " + formatAmount(plan.totalHigh) +
+      "\n• After fees and tax: about " + formatAmount(plan.totalAfterFeesAndTax) +
+      (notes.length ? "\n\n" + notes.join(" ") : "") +
+      (bandChanged && changes.band && changes.band !== state.lastRisk.band ? "\n\nYour answers pointed to " + state.lastRisk.band.toLowerCase() + ", so this is your choice rather than the calculated band." : "");
+    var chips = [{ label: "Undo that", run: function () {
+      Object.assign(state.plan, before.plan);
+      state.selectedBand = before.band;
+      refreshAfterPlanChange(bandChanged);
+      addBubble("bot", "Undone. Your plan is back to " + formatINR(state.plan.amount) + " a month for " + yearsText(state.plan.years) + ", " + activeBand().toLowerCase() + ".");
+      addChips(starterChips());
+    } }];
+    if ($("view-invest").style.display === "none") chips.push(openPlanAction());
+    chips.push("What happens in a market crash?");
+    return { text: text, chips: chips };
+  }
+
+  function has2(q, re) { return re.test(q); }
+
+  /* ---- Loans ---- */
+  function payoffReply(q, amounts) {
+    var balance = amounts[0], payment = amounts[1];
+    var rate = parsePercent(q) || (has2(q, /card/) ? HIGH_INTEREST_PCT : has2(q, /personal|app/) ? 18 : 12);
+    var r = rate / 100 / 12, bal = balance, months = 0, interest = 0;
+    if (payment <= balance * r) {
+      return { text: "At " + rate + "% a year, " + formatAmount(balance) + " builds up about " + formatINR(Math.round(balance * r)) + " of interest a month, so paying " + formatINR(payment) +
+        " would never clear it. The balance would keep growing. You'd need to pay more than " + formatINR(Math.ceil(balance * r / 100) * 100) + " a month just to start bringing it down.",
+        chips: ["How do I clear my debt?", "What should I do first?"] };
+    }
+    while (bal > 0.5 && months < 600) { var i = bal * r; interest += i; bal = bal + i - payment; months++; }
+    var faster = payment * 1.5, m2 = 0, int2 = 0; bal = balance;
+    while (bal > 0.5 && m2 < 600) { var i2 = bal * r; int2 += i2; bal = bal + i2 - faster; m2++; }
+    return { text: "Paying " + formatINR(payment) + " a month on " + formatAmount(balance) + " at " + rate + "% a year" + (parsePercent(q) ? "" : " (assumed)") + ":\n\n" +
+      "• Cleared in about " + months + " month" + (months === 1 ? "" : "s") + "\n• Interest paid along the way: about " + formatAmount(interest) + "\n\n" +
+      "Paying " + formatINR(Math.round(faster)) + " instead clears it in about " + m2 + " months and saves roughly " + formatAmount(interest - int2) + " in interest." +
+      (rate >= 24 ? "\n\nAt this rate it's worth asking your bank about moving the balance to a cheaper personal loan, and not adding to it meanwhile." : ""),
+      chips: ["How do I clear my debt?", "What should I do first?"] };
+  }
+
+  function emiReply(q, principal, snap) {
+    var given = parsePercent(q), type = has2(q, /home|house|flat/) ? "home" : has2(q, /car|vehicle|bike/) ? "vehicle" : has2(q, /education|student|study/) ? "education" : has2(q, /personal/) ? "personal" : null;
+    var rate = given || { home: 8.5, vehicle: 9.5, education: 10, personal: 13 }[type] || 11;
+    var years = parseYears(q) || (type === "home" ? 20 : 5);
+    var n = Math.round(years * 12), r = rate / 100 / 12;
+    var emi = r ? principal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1) : principal / n;
+    var total = emi * n;
+    var share = snap.income ? emi / snap.income : null;
+    return { text: "For a " + formatAmount(principal) + (type ? " " + type : "") + " loan at " + rate + "% a year" + (given ? "" : " (a typical rate I've assumed)") + " over " + yearsText(years) +
+      (parseYears(q) ? "" : " (assumed)") + ":\n\n" +
+      "• EMI: about " + formatINR(Math.round(emi)) + " a month\n• Total repaid: " + formatAmount(total) + "\n• Of which interest: " + formatAmount(total - principal) +
+      (share !== null ? "\n\nThat EMI is about " + Math.round(share * 100) + "% of your monthly income. " +
+        (share > 0.4 ? "That's above the 30–40% most lenders and planners are comfortable with, so it would squeeze everything else." : share > 0.3 ? "That's at the upper end of comfortable; keep other EMIs low." : "That's a manageable share.") : "") +
+      "\n\nA shorter tenure means a bigger EMI but much less interest overall.",
+      chips: ["What if the loan was for " + Math.max(1, Math.round(years / 2)) + " years?", "How do I clear my debt?"] };
+  }
+
+  /* ---- Goals, inflation and the cost of waiting ---- */
+  function goalReply(target, years, snap, flow, blended) {
+    var g = goalRate(years, blended);
+    var monthly = target / sipFutureValue(1, g.rate, years);
+    var lump = target / Math.pow(1 + g.rate / 100, years);
+    var inflated = target * Math.pow(1 + INFLATION_PCT / 100, years);
+    var lines = ["To have " + formatAmount(target) + " in " + yearsText(years) + ", planning on about " + (Math.round(g.rate * 10) / 10) + "% a year in " + g.where + ":", "",
+      "• Invest about " + formatINR(roundTo(monthly, 100)) + " a month, or",
+      "• Put in about " + formatAmount(lump) + " once, today"];
+    if (years >= 3) lines.push("• Or start at " + formatINR(roundTo(target / stepUpFutureValue(1, g.rate, years, 10), 100)) + " a month and raise it 10% each year");
+    lines.push("", "If this goal is a price that rises with " + INFLATION_PCT + "% inflation (a car, fees, a wedding), it'll cost about " + formatAmount(inflated) +
+      " by then, which needs about " + formatINR(roundTo(inflated / sipFutureValue(1, g.rate, years), 100)) + " a month.");
+    if (flow && flow.budget > 0) {
+      if (monthly > flow.budget) {
+        var need = null;
+        for (var y = Math.ceil(years); y <= 40; y++) { if (sipFutureValue(flow.budget, goalRate(y, blended).rate, y) >= target) { need = y; break; } }
+        lines.push("", "That's more than the roughly " + formatINR(roundTo(flow.budget, 100)) + " a month your answers suggest you can set aside." +
+          (need ? " At that pace it would take about " + need + " years." : " A smaller goal or a higher income would be needed."));
+      } else {
+        lines.push("", "That's about " + Math.round(monthly / flow.budget * 100) + "% of the roughly " + formatINR(roundTo(flow.budget, 100)) + " a month you can set aside.");
+      }
+    }
+    if (snap.highInterestDebt) lines.push("", "Clear the high-interest debt before starting on this: it costs more than this goal can earn.");
+    return { text: lines.join("\n"), chips: [
+      "What about " + (years + 2) + " years?",
+      { label: "Plan with " + formatINR(roundTo(monthly, 100)) + " a month", run: function () { askAssistant("Set my plan to " + formatINR(roundTo(monthly, 100)) + " a month for " + nearest(HORIZONS, years) + " years"); } },
+      "Compare FD and index fund for " + Math.round(years) + " years"] };
+  }
+
+  function inflationReply(q, amount, years) {
+    var f = Math.pow(1 + INFLATION_PCT / 100, years);
+    if (has2(q, /cost|price|expensive|pay for/)) {
+      return { text: "At " + INFLATION_PCT + "% inflation, something that costs " + formatAmount(amount) + " today would cost about " + formatAmount(amount * f) + " in " + yearsText(years) +
+        ". Prices roughly double every " + Math.round(72 / INFLATION_PCT) + " years at that rate, which is why savings need to grow just to keep up.",
+        chips: ["How much should I save to have " + formatINR(roundTo(amount * f, 1000)) + " in " + Math.round(years) + " years?", "What is inflation?"] };
+    }
+    return { text: formatAmount(amount) + " kept as cash would buy only about " + formatAmount(amount / f) + " worth of today's things in " + yearsText(years) + ", at " + INFLATION_PCT +
+      "% inflation.\n\nTo keep its buying power it needs to grow at least " + INFLATION_PCT + "% a year. A savings account (about 3%) falls behind; an FD (about " + ASSUMED_RATES.fd +
+      "%) roughly keeps pace before tax; equity (about " + ASSUMED_RATES.mf + "%) has historically beaten it over long periods.",
+      chips: ["Compare FD and index fund", "What is inflation?"] };
+  }
+
+  function delayReply(q, snap, blended) {
+    var delay = Math.max(1, Math.round(parseYears(q) || 5));
+    var monthly = parseAmounts(q)[0] || (state.plan.amount > 0 ? state.plan.amount : suggestedMonthlyAmount(snap)) || 5000;
+    var horizon = snap.yearsToRetire && snap.yearsToRetire > delay + 1 ? snap.yearsToRetire : Math.max(20, delay + 10);
+    var now = sipFutureValue(monthly, blended, horizon), later = sipFutureValue(monthly, blended, horizon - delay);
+    var catchUp = now / sipFutureValue(1, blended, horizon - delay);
+    return { text: "Investing " + formatINR(monthly) + " a month for " + horizon + " years" + (snap.yearsToRetire === horizon ? " (until you're " + RETIREMENT_AGE + ")" : "") + " at ~" + blended + "% a year:\n\n" +
+      "• Start now: about " + formatAmount(now) + "\n• Start in " + delay + " year" + (delay === 1 ? "" : "s") + ": about " + formatAmount(later) + "\n\n" +
+      "Waiting costs about " + formatAmount(now - later) + ", although you'd only have put in " + formatAmount(monthly * 12 * delay) + " less. To catch up after waiting, you'd need about " +
+      formatINR(roundTo(catchUp, 100)) + " a month instead of " + formatINR(monthly) + ".\n\nThat's compounding: the earliest years grow the longest.",
+      chips: ["What is compounding?", "What should I do first?"] };
+  }
+
+  /* ---- Practice questions ---- */
+  function quizReply() {
+    var answered = state.answers;
+    var pool = QUESTIONS.filter(function (qq) {
+      return qq.profiles.indexOf(state.profile) !== -1 && isKnowledgeQuestion(qq) && qq.type === "SINGLE" && !assistantQuizzed[qq.code];
+    });
+    if (!pool.length) {
+      return { text: "You've been through every practice question I have for your profile. Retake the assessment to see how your score has changed.", chips: ["Why is my score " + state.lastScore.total + "?"] };
+    }
+    var rank = function (qq) {
+      var a = answered[qq.code];
+      if (!a) return 1;
+      if (a.unknown || a.selected !== qq.rubric.correct) return 0;
+      return 2;
+    };
+    pool.sort(function (a, b) { return rank(a) - rank(b); });
+    var q = presented(pool[0]);
+    assistantQuiz = { code: q.code };
+    assistantQuizzed[q.code] = true;
+    var a = answered[q.code];
+    var lead = !a ? "Here's one you didn't get in the assessment:" : rank(pool[0]) === 0 ? "Let's try one you missed earlier:" : "Here's one to keep you sharp:";
+    return { text: lead + "\n\n" + q.text + "\n\n" + q.options.map(function (o) { return o[0] + ". " + o[1]; }).join("\n") + "\n\nPick a letter.",
+      chips: q.options.map(function (o) { return o[0] + " — " + (o[1].length > 42 ? o[1].slice(0, 40) + "…" : o[1]); }) };
+  }
+
+  function quizAnswerReply(raw) {
+    var base = questionByCode(assistantQuiz.code), q = presented(base);
+    var m = raw.trim().match(/^\(?([a-d])\)?(?:$|[\s.):,—-])/i);
+    var pick = m ? m[1].toUpperCase() : null;
+    if (!pick) {
+      var low = raw.toLowerCase();
+      q.options.forEach(function (o) { if (!pick && low.length > 3 && o[1].toLowerCase().indexOf(low) !== -1) pick = o[0]; });
+    }
+    if (!pick) return null;
+    assistantQuiz = null;
+    var right = pick === q.rubric.correct;
+    var correctLabel = q.options.filter(function (o) { return o[0] === q.rubric.correct; })[0][1];
+    return { text: (right ? "Correct! " : "Not quite. The answer is " + q.rubric.correct + ": " + correctLabel + ".\n\n") + (REVIEW_WHY[base.code] || "") +
+      "\n\nPractice answers don't change your score; retake the assessment for that.",
+      chips: ["Quiz me again", LESSON_BY_CAT[base.category] ? { label: "Open the " + CATEGORY_META[base.category].label.toLowerCase() + " lesson", run: function () { openLesson(LESSON_BY_CAT[base.category].id); } } : "What should I do first?"] };
+  }
+
+  /* ---- Lessons and plain explanations ---- */
+  var TEACH_KEYS = [
+    ["BUDGETING", /budget|spend|expense|needs|wants/], ["SAVING", /emergency|saving|insurance|cushion/], ["DEBT", /debt|loan|credit|card|emi|borrow/],
+    ["COMPOUNDING", /compound|early|grow/], ["RISK", /risk|volatil|crash|diversif/], ["INVESTING", /invest|sip|index|mutual|fund|share|stock/],
+    ["RETIREMENT", /retire|pension|ppf|epf|nps/]];
+
+  function teachReply(q) {
+    var hit = TEACH_KEYS.filter(function (k) { return k[1].test(q); })[0];
+    var cat = hit ? hit[0] : topAndBottomCategories(state.lastScore.breakdown).worst[0];
+    var l = LESSON_BY_CAT[cat];
+    return { text: (hit ? "" : "Let's start with your weakest area, " + CATEGORY_META[cat].label.toLowerCase() + ".\n\n") + l.title + "\n\n" + l.body[0] + "\n\n" + l.body[1] + "\n\nThe key idea: " + lowerFirst(l.takeaway),
+      chips: [{ label: "Open the full lesson + quick check", run: function () { openLesson(l.id); } }, "Quiz me", "What should I do first?"] };
+  }
+
+  function plainTextOf(el) {
+    var c = el.cloneNode(true);
+    c.querySelectorAll("button").forEach(function (b) { b.remove(); });
+    return Array.prototype.map.call(c.children, function (node) {
+      if (node.tagName === "UL" || node.tagName === "OL") {
+        return Array.prototype.map.call(node.children, function (li, i) {
+          var t = li.querySelector(".amt") ? Array.prototype.map.call(li.children, function (x) { return x.textContent; }).join(" ") : li.textContent;
+          return (node.tagName === "OL" ? (i + 1) + ". " : "• ") + t.replace(/\s+/g, " ").trim();
+        }).join("\n");
+      }
+      return node.textContent.replace(/\s+/g, " ").trim();
+    }).filter(Boolean).join("\n\n").replace(/ \./g, ".");
+  }
+
+  function simpleReply() {
+    var screen = assistantScreen;
+    if (screen === "invest" && state.plan.initialised) {
+      renderPlainInvest(computeInvestmentPlan(state.plan.amount, state.plan.years, activeAllocation(), state.plan.vehicles, activeBand(), state.lastRisk.snapshot, { stepUp: state.plan.stepUp }));
+    } else if (screen !== "score") { screen = "risk"; renderPlainRisk(); }
+    else renderPlainScore();
+    var text = plainTextOf($("plain-" + screen + "-body"));
+    var chips = ["What should I do first?", "Quiz me"];
+    if (!isSimple()) chips.unshift({ label: "Turn on Simple mode", run: function () { setSimple(true); addBubble("bot", "Simple mode is on: money words now have a dotted underline you can tap, and each results screen opens with a plain-words summary."); } });
+    return { text: "In plain words:\n\n" + text, chips: chips };
+  }
+
+  function helpReply() {
+    return { text: "Here's what I can do, all worked out from your own answers:\n\n" +
+      "• Explain your score, risk profile or plan (“explain this simply”)\n" +
+      "• Plan a goal (“how much to save for ₹5 lakh in 3 years?”)\n" +
+      "• Run a what-if (“what if I invest ₹5,000 a month for 15 years?”)\n" +
+      "• Change your plan (“set my SIP to ₹8,000 for 15 years”, “switch to balanced”)\n" +
+      "• Work out a loan EMI, or how long a card balance takes to clear\n" +
+      "• Compare options (“FD vs PPF”, “index fund or gold?”)\n" +
+      "• Show what inflation or waiting to start would cost\n" +
+      "• Explain any money word, teach a 2-minute lesson, or quiz you\n\n" +
+      "I can't recommend specific stocks or funds, and none of this is financial advice.",
+      chips: ["How much to save for ₹5 lakh in 3 years?", "Quiz me", "FD vs PPF", "EMI on a ₹8 lakh car loan"] };
+  }
+
+  /** "What about 15 years?" after a calculation: redo it with the new numbers. */
+  function followUpReply(q) {
+    if (!assistantCtx) return null;
+    if (!/^(and |ok,? |so )?(what|how) about\b|^(and|also|then)\b|^(for |over |in )?\d+(\.\d+)?\s*(years?|yrs?)\??$|^(and )?(if|with) (it'?s |i )?(\d|₹|rs)|^what if (it|the loan) (was|were|is)/.test(q)) return null;
+    var amount = parseAmounts(q)[0], years = parseYears(q), rate = parsePercent(q);
+    if (!amount && !years && !rate) return null;
+    var c = assistantCtx;
+    var A = amount || c.amount, Y = years || c.years, P = rate || c.rate;
+    var ask = {
+      whatif: "what if i invest " + A + (c.lump ? " once" : " a month") + " for " + Y + " years",
+      goal: "how much to save to have " + A + " in " + Y + " years",
+      loan: "emi on a " + A + " " + (c.type || "") + " loan" + (P ? " at " + P + "%" : "") + " for " + Y + " years",
+      delay: "what if i wait " + Y + " years to start investing " + A + " a month",
+      inflation: "what will " + A + (c.cost ? " cost" : " be worth") + " in " + Y + " years"
+    }[c.kind];
+    return ask ? answerQuestion(ask) : null;
+  }
+
+  /** New skills, tried before the original topic routes. Returns a reply, or null to fall through. */
+  function skillReply(raw, q, snap, flow, blended) {
+    if (assistantQuiz) { var qa = quizAnswerReply(raw); if (qa) return qa; assistantQuiz = null; }
+    var fu = followUpReply(q); if (fu) return fu;
+    if (/^(help|\?)$|what can you (do|help)|what do you do|how can you help|what (else )?can i ask|capabilit|features/.test(q)) return helpReply();
+    if (/explain (it|this|that|my (results?|score|plan|risk)|this page)? ?(simply|in simple|plainly)|in simple (words|terms)|simpler|plain (words|english)|eli5|like i'?m (5|five|new|a beginner)|i('m| am) (confused|lost|new to this)|don'?t understand|too complicated|make (it|this) simple/.test(q)) return simpleReply();
+    if (/quiz|test me|ask me a question|practice question|check my knowledge/.test(q)) return quizReply();
+    if (/teach me|lessons?\b|learn (about|more)|basics of|course on/.test(q)) return teachReply(q);
+    if (/\bvs\.?\b|versus|compare|comparison|better|difference|\bor\b|instead of|rather than/.test(q)) { var cmp = compareReply(q, snap); if (cmp) return cmp; }
+    if (/\bsip\b.*\blump|\blump.*\bsip\b/.test(q)) {
+      return { text: "If the money arrives monthly (a salary or allowance), a SIP isn't a choice. It's simply how you invest it.\n\nIf you already have a lump sum: investing it all at once has historically come out ahead more often than not, because markets rise in more years than they fall. Spreading it over 6–12 months (a “STP” from a liquid fund into an equity fund) gives up a little of that on average, but avoids the regret of investing everything just before a fall. For most beginners, spreading it is easier to stick with.",
+        chips: ["What happens in a market crash?", "What is a liquid fund?"] };
+    }
+    var pc = planChangeReply(q, snap); if (pc) return pc;
+    var amounts = parseAmounts(q);
+    if (amounts.length && /pay ?off|clear|how long|repay/.test(q) && /card|debt|loan|balance|owe/.test(q) && /a month|per month|monthly|every month|\/month|\/mo\b/.test(q)) {
+      if (amounts.length >= 2) return payoffReply(q, amounts);
+    }
+    if (amounts.length && /\bemi\b|\bloan\b/.test(q) && !/pay ?off|clear|prepay/.test(q)) {
+      var type = /home|house|flat/.test(q) ? "home" : /car|vehicle|bike/.test(q) ? "car" : /education|student/.test(q) ? "education" : /personal/.test(q) ? "personal" : "";
+      assistantCtx = { kind: "loan", amount: amounts[0], years: parseYears(q) || (type === "home" ? 20 : 5), rate: parsePercent(q), type: type };
+      return emiReply(q, amounts[0], snap);
+    }
+    if (amounts.length && (/\b(to (have|get|reach|build|buy|afford|accumulate|collect|save up)|goal|target|save for|saving for|saving up|i want|i need|need .* (by|in))\b/.test(q) || /how much.*(save|invest|put|need).*(to|for)\b/.test(q))) {
+      var gy = parseYears(q) || 5;
+      assistantCtx = { kind: "goal", amount: amounts[0], years: gy };
+      return goalReply(amounts[0], Math.max(gy, 0.5), snap, flow, blended);
+    }
+    if (amounts.length && /inflation|today'?s money|buying power|purchasing power|will cost|cost in|price in|cost after|be worth in|worth in|worth after|value of .* in/.test(q) && !/\binvest|\bsip\b/.test(q)) {
+      var iy = parseYears(q) || 10;
+      assistantCtx = { kind: "inflation", amount: amounts[0], years: iy, cost: /cost|price|expensive/.test(q) };
+      return inflationReply(q, amounts[0], iy);
+    }
+    if (/delay|postpone|put (it )?off|start later|if i wait|wait \d|cost of waiting|don'?t start|not start(ing)? (now|yet)/.test(q)) {
+      var dy = Math.max(1, Math.round(parseYears(q) || 5));
+      assistantCtx = { kind: "delay", amount: amounts[0] || (state.plan.amount > 0 ? state.plan.amount : suggestedMonthlyAmount(snap)) || 5000, years: dy };
+      return delayReply(q, snap, blended);
+    }
+    return null;
+  }
+
   /**
    * Picks the topic a question is about and answers it from the user's real
    * numbers. Order matters: what-ifs and out-of-scope requests are checked
@@ -4266,6 +4943,9 @@
     var has = function (re) { return re.test(q); };
     var repeat = assistantAsked[q] ? "To recap: " : "";
     var R = function (text, chips) { return { text: repeat + text, chips: chips || [] }; };
+
+    var skill = skillReply(raw, q, snap, flow, blended);
+    if (skill) return R(skill.text, skill.chips);
 
     if (has(/^(hi|hello|hey|namaste|hii+)\b/)) {
       return R(pick(["Hello! ", "Hi there! ", "Namaste! "]) + "I'm working from your own answers, so ask me anything about your score, your " + bandL + " risk profile or your plan.", starterChips());
@@ -4285,6 +4965,7 @@
     if (wi.amount && has(/invest|sip|put|save|saving|grow|become|what if|how much will|worth/)) {
       var amount = Math.round(wi.amount), years = Math.min(Math.max(wi.years || state.plan.years || 10, 1), 50);
       var lump = has(/lump|one[- ]time|once|lakh(s)? (now|today)/) && !has(/month|monthly|sip|every/);
+      assistantCtx = { kind: "whatif", amount: amount, years: years, lump: lump };
       var fvBand = lump ? amount * Math.pow(1 + blended / 100, years) : sipFutureValue(amount, blended, years);
       var fvEq = lump ? amount * Math.pow(1 + ASSUMED_RATES.mf / 100, years) : sipFutureValue(amount, ASSUMED_RATES.mf, years);
       var put = lump ? amount : amount * 12 * years;
@@ -4311,6 +4992,8 @@
       for (var g = 0; g < GLOSSARY.length; g++) {
         if (GLOSSARY[g].re.test(q)) return R(GLOSSARY[g].text, ["How does this apply to me?", "What should I do first?"]);
       }
+      var word = firstTermMatch(raw, {});
+      if (word) return R(word.term.label + ": " + word.term.def, ["How does this apply to me?", "What should I do first?"]);
     }
 
     if (has(/first|priorit|start|begin|what should i do|next step|where do i|apply to me|one thing/)) {
@@ -4456,8 +5139,8 @@
     }
 
     return R(pick(["I'm not sure I understood that one. ", "I don't have a good answer for that from your results. "]) +
-      "I can explain your score (" + res.total + "/100), your " + bandL + " risk profile, your emergency fund, debt, tax or retirement — or run a what-if like \u201cwhat if I invest \u20b95,000 a month for 10 years?\u201d",
-      starterChips());
+      "I can explain your score (" + res.total + "/100), your " + bandL + " risk profile, your emergency fund, debt, tax or retirement; plan a goal; work out a loan EMI; compare options like FD vs PPF; change your plan; or quiz you.",
+      ["What can you do?"].concat(starterChips()));
   }
 
   /* ---------------- ANALYZING ---------------- */
@@ -4581,7 +5264,7 @@
       row.innerHTML =
         '<span class="cat-label"><span class="dot" style="background:' + meta.color + ';"></span>' + meta.label + '</span>' +
         '<div class="breakdown-track"><div class="breakdown-fill" style="background:' + meta.color + ';"></div></div>' +
-        '<span class="breakdown-pct">' + (assessed ? val + '%' : 'n/a') + '</span>';
+        '<span class="breakdown-pct">' + (assessed ? val + '%' : 'n/a') + '</span>' + breakdownLearnHtml(cat, val);
       val = val || 0;
       list.appendChild(row);
       requestAnimationFrame(function () { row.querySelector(".breakdown-fill").style.width = val + "%"; });
@@ -4590,6 +5273,8 @@
     renderSnapshot(state.lastRisk.snapshot);
     recordDraft("score", narrative, false);
     streamScoreNarrative(narrative);
+    renderPlainScore();
+    renderAnswerReview();
   }
 
   function snapshotTiles(snap) {
@@ -4882,6 +5567,7 @@
       state.profile);
     recordDraft("risk", narrative, false);
     streamRiskNarrative(narrative);
+    renderPlainRisk();
   }
 
   function streamRiskNarrative(narrative, instant) {
@@ -5082,6 +5768,7 @@
     renderInstrumentList(plan);
     renderGrowthChart(plan);
     renderFundMix();
+    renderPlainInvest(plan);
     saveProgress();
   }
 
@@ -5761,7 +6448,781 @@
   });
   syncThemeToggles();
 
+  /* =====================================================================
+     BEGINNER HELP — "Simple mode". A layer of plain-language help over the
+     screens above. It never changes a score, a band or a rupee figure:
+       - a "What does this mean?" explainer and "Words to know" on each question
+       - tap-to-define jargon inside questions, narratives and plan cards
+       - an "In plain words" summary on the score, risk and plan screens
+       - advanced cards folded behind a "Show" button (still one click away)
+       - short lessons per category, and a review of knowledge answers
+     The explainer, the glossary, the lessons and the review work with Simple
+     mode off too; only the inline underlines, summaries and folding need it.
+     ===================================================================== */
+
+  var SIMPLE_KEY = "money-compass-simple-v1";
+  var LESSONS_KEY = "money-compass-lessons-v1";
+
+  // Plain-language money words. `re` is matched case-insensitively unless
+  // `cs` is set (acronyms like FD, so "fd" inside other words never matches).
+  var TERMS = [
+    { id: "sip", label: "SIP (Systematic Investment Plan)", re: "SIPs?|systematic investment plans?", cs: false,
+      def: "You pick a fixed amount (as little as ₹500) and it's invested in a mutual fund automatically every month. You never have to guess the \"right time\" to buy." },
+    { id: "stepup", label: "Step-up SIP", re: "step-up SIPs?",
+      def: "A SIP you raise every year, say by 10%, usually when your income goes up. Small raises make a big difference over many years." },
+    { id: "mf", label: "Mutual fund", re: "mutual funds?",
+      def: "A pool of money from many people, invested by a professional fund house in shares, bonds or both. You own a small slice of the pool, called units." },
+    { id: "index", label: "Index fund", re: "index funds?",
+      def: "A mutual fund that simply buys every company on a market list (an index) such as the Nifty 50, instead of a manager picking stocks. Low cost and easy to understand." },
+    { id: "nifty", label: "Nifty 50", re: "Nifty 50|Nifty",
+      def: "A list of 50 of the largest companies on India's National Stock Exchange. People use it to measure how the Indian stock market is doing." },
+    { id: "direct-eq", label: "Direct equity (direct shares)", re: "direct equity|direct shares",
+      def: "Buying shares of individual companies yourself through a broker, instead of through a mutual fund. It takes more research and carries more risk." },
+    { id: "equity", label: "Equity", re: "equity|equities",
+      def: "Shares: owning a small part of a company. Over many years it has grown the most, but its price goes up and down a lot, sometimes 20–30% in a bad year." },
+    { id: "debtfund", label: "Debt fund", re: "debt funds?",
+      def: "A mutual fund that lends money to the government and companies and earns interest. Steadier than shares and usually a little ahead of an FD, but not guaranteed." },
+    { id: "bond", label: "Corporate bond", re: "corporate bonds?",
+      def: "A loan you give to a company, which pays you interest. A corporate bond fund holds many such loans at once." },
+    { id: "fd", label: "FD (Fixed Deposit)", re: "FDs?|fixed deposits?", cs: true,
+      def: "You lock money with a bank for a fixed time at a fixed interest rate. Safe and predictable. Breaking it early usually costs a small penalty." },
+    { id: "rd", label: "RD (Recurring Deposit)", re: "RDs?|recurring deposits?", cs: true,
+      def: "Like an FD, but you put in a fixed amount every month instead of all at once." },
+    { id: "liquid", label: "Liquid fund", re: "liquid funds?",
+      def: "A very low-risk mutual fund that lends money for just weeks or months. It usually earns more than a savings account, and you can get your money back within a day." },
+    { id: "ef", label: "Emergency fund", re: "emergency funds?",
+      def: "Money kept aside only for surprises, like losing your income or a medical bill, somewhere you can reach within a day or two." },
+    { id: "emi", label: "EMI", re: "EMIs?", cs: true,
+      def: "Equated Monthly Instalment: the fixed amount you repay on a loan every month. Part of it is interest and part pays back the loan itself." },
+    { id: "mindue", label: "Minimum due", re: "minimum due|the minimum",
+      def: "The smallest amount a card company lets you pay without a late fee. Pay only this and very high interest is charged on everything you still owe." },
+    { id: "bnpl", label: "Buy Now Pay Later (BNPL)", re: "Buy Now Pay Later|BNPL",
+      def: "Apps or checkout options that let you buy now and pay in instalments later. Miss a payment and the fees and interest add up quickly." },
+    { id: "compound", label: "Compounding", re: "compound interest|compounding|compounded",
+      def: "Earning returns on your returns. ₹100 growing 10% a year becomes ₹110, then ₹121 (not ₹120), because last year's ₹10 grows too. Over many years the effect becomes very large." },
+    { id: "rule72", label: "Rule of 72", re: "Rule of 72",
+      def: "A quick shortcut: divide 72 by the yearly return to find roughly how many years money takes to double." },
+    { id: "inflation", label: "Inflation", re: "inflation",
+      def: "Prices rising over time. At 6% a year, something that costs ₹100 today costs about ₹179 in ten years, so money sitting still slowly buys less." },
+    { id: "volatility", label: "Volatility", re: "volatility|volatile",
+      def: "How much, and how quickly, a price swings up and down. More volatile means bigger swings in both directions." },
+    { id: "divers", label: "Diversification", re: "diversification|diversified|diversify",
+      def: "Spreading money across many investments so that one going badly can't hurt you much: not putting all your eggs in one basket." },
+    { id: "portfolio", label: "Portfolio", re: "portfolios?",
+      def: "Everything you've invested, taken together: your funds, shares, deposits, gold and so on." },
+    { id: "alloc", label: "Allocation", re: "allocation",
+      def: "How your money is split between types of investment, such as shares, debt, gold and cash. It matters more to your results than which exact fund you pick." },
+    { id: "tolerance", label: "Risk tolerance", re: "risk tolerance|tolerance",
+      def: "How comfortable you'd feel if your investments fell in value. It's about your nerves." },
+    { id: "capacity", label: "Risk capacity", re: "risk capacity|capacity",
+      def: "How well your finances could survive a fall in your investments, based on your emergency fund, debts, income and how soon you need the money. It's about your situation, not your feelings." },
+    { id: "band", label: "Risk band / risk profile", re: "risk bands?|risk profiles?",
+      def: "A label from Conservative (safest, slowest growth) to Aggressive (most growth, biggest ups and downs). It decides how your money is split." },
+    { id: "horizon", label: "Time horizon", re: "time horizon|horizon",
+      def: "How long until you need the money. The longer it is, the more ups and downs you can wait out." },
+    { id: "corpus", label: "Corpus", re: "corpus",
+      def: "The total pot of money you've built up, usually for retirement." },
+    { id: "lockin", label: "Lock-in", re: "lock-in|locked",
+      def: "A period during which you can't take your money out of an investment." },
+    { id: "elss", label: "ELSS", re: "ELSS", cs: true,
+      def: "Equity Linked Savings Scheme: a mutual fund that invests in shares and can lower your income tax under the old tax regime. Your money is locked in for a few years." },
+    { id: "80c", label: "Section 80C", re: "Section 80C|80C", cs: true,
+      def: "A part of India's income tax law that lets you reduce your taxable income by up to ₹1.5 lakh a year by putting money into certain savings and investments. Only under the old tax regime." },
+    { id: "regime", label: "New and old tax regime", re: "new tax regime|old tax regime|tax regime|new regime|old regime",
+      def: "India has two ways to work out income tax. The new regime (the default) has lower rates but few deductions. The old regime has higher rates but allows deductions such as 80C and HRA." },
+    { id: "slab", label: "Tax slab", re: "income-tax slab|tax slab|slab rate|slab",
+      def: "The rate of income tax on the top part of your income. Higher incomes fall into higher slabs." },
+    { id: "ppf", label: "PPF (Public Provident Fund)", re: "PPF|Public Provident Fund", cs: true,
+      def: "A long-term savings scheme backed by the Government of India. Very safe, with tax-free interest, but your money is locked in for many years." },
+    { id: "epf", label: "EPF (Employees' Provident Fund)", re: "EPF|Employees' Provident Fund", cs: true,
+      def: "Retirement savings that you and your employer both pay into from your salary every month, earning an interest rate set by the government." },
+    { id: "uan", label: "UAN", re: "UAN", cs: true,
+      def: "Universal Account Number: your permanent EPF number. It stays the same when you change jobs." },
+    { id: "nps", label: "NPS (National Pension System)", re: "NPS|National Pension System", cs: true,
+      def: "A low-cost pension account regulated by the government. You invest regularly while working, and most of it stays locked until you turn 60." },
+    { id: "scss", label: "SCSS", re: "SCSS|Senior Citizens' Savings Scheme", cs: true,
+      def: "The Senior Citizens' Savings Scheme: a government-backed deposit for people aged 60 and over that pays interest every three months." },
+    { id: "swp", label: "SWP (Systematic Withdrawal Plan)", re: "SWPs?|Systematic Withdrawal Plan", cs: true,
+      def: "The reverse of a SIP: a fixed amount is taken out of your mutual fund regularly and paid into your bank account." },
+    { id: "sgb", label: "Sovereign Gold Bond (SGB)", re: "Sovereign Gold Bonds?|SGBs?", cs: true,
+      def: "Gold bonds issued by the Government of India. Their value follows the gold price, plus a small yearly interest. No new ones have been issued since 2024, but existing ones trade on the stock exchange." },
+    { id: "goldetf", label: "Gold ETF / gold fund", re: "gold ETFs?|gold funds?",
+      def: "A fund that tracks the price of gold, so you can own gold without buying jewellery or worrying about storage or purity." },
+    { id: "largecap", label: "Large cap", re: "large caps?|large-cap",
+      def: "India's 100 biggest listed companies. Their share prices tend to be steadier than smaller companies'." },
+    { id: "midcap", label: "Mid cap", re: "mid caps?|mid-cap",
+      def: "Companies ranked 101st to 250th by size. More room to grow than large caps, with bigger swings." },
+    { id: "smallcap", label: "Small cap", re: "small caps?|small-cap",
+      def: "Companies ranked 251st and smaller. The most growth potential and the biggest swings; they can fall 40% or more in a bad year." },
+    { id: "flexicap", label: "Flexi cap", re: "flexi caps?|flexi-cap",
+      def: "A fund whose manager can invest in companies of any size: large, mid or small." },
+    { id: "term", label: "Term insurance (term plan)", re: "term plans?|term insurance|term life",
+      def: "Pure life insurance: if you die during the policy period, your family gets a large sum. If you don't, nothing is paid back, which is why it's cheap." },
+    { id: "endow", label: "Endowment / money-back policy", re: "endowment|money-back",
+      def: "Insurance that mixes life cover with savings. It usually gives low returns and far less cover than a term plan plus separate investing." },
+    { id: "floater", label: "Family floater", re: "family floater|floater",
+      def: "One health insurance policy that covers the whole family, sharing a single cover amount." },
+    { id: "topup", label: "Top-up / super top-up", re: "super top-up|top-up",
+      def: "Extra health cover that only pays once a bill goes above a set amount. A cheap way to get much bigger cover." },
+    { id: "tds", label: "TDS (Tax Deducted at Source)", re: "TDS", cs: true,
+      def: "Tax that's cut before money reaches you, for example by your bank from FD interest." },
+    { id: "15h", label: "Form 15G / 15H", re: "Form 15[GH]", cs: true,
+      def: "Forms you give your bank so it doesn't deduct tax from your interest when your total income is below the taxable limit. 15H is for people aged 60 or over, 15G for everyone else." },
+    { id: "kyc", label: "KYC", re: "KYC", cs: true,
+      def: "Know Your Customer: a one-time identity check with your PAN and Aadhaar that you complete before you can invest." },
+    { id: "direct-plan", label: "Direct plan", re: "Direct plans?",
+      def: "The version of a mutual fund you buy straight from the fund house or a direct-plan app. It has lower fees than the \"Regular\" version, which pays a distributor commission." },
+    { id: "expense", label: "Expense ratio", re: "expense ratios?",
+      def: "The yearly fee a mutual fund charges, as a percentage of your money. Lower is better." },
+    { id: "gains", label: "Capital gains", re: "capital gains|long-term gains|LTCG",
+      def: "The profit when you sell an investment for more than you paid. It's taxed differently from salary." },
+    { id: "moratorium", label: "Moratorium", re: "moratorium",
+      def: "A period, such as while you're studying, when you don't have to make loan repayments yet." },
+    { id: "upipin", label: "UPI PIN", re: "UPI PIN|PIN", cs: true,
+      def: "The secret number that approves UPI payments from your account. Never share it with anyone." },
+    { id: "otp", label: "OTP", re: "OTPs?", cs: true,
+      def: "One-Time Password: a short code sent to your phone to confirm a transaction or login. Your bank will never ask you for it." },
+    { id: "rebal", label: "Rebalancing", re: "rebalanc(?:e|es|ing)",
+      def: "Moving money back to your chosen split, usually once a year. For example, selling some shares after a strong year and adding to debt. It keeps your risk where you chose it." },
+    { id: "annuity", label: "Annuity", re: "annuit(?:y|ies)",
+      def: "A product, usually from an insurer, that turns a lump sum into a fixed income for life or for a set number of years." },
+    { id: "nominee", label: "Nominee", re: "nominees?",
+      def: "The person you name to receive the money in an account or investment if you die." },
+    { id: "dicgc", label: "DICGC deposit insurance", re: "DICGC", cs: true,
+      def: "The RBI body that insures bank deposits up to ₹5 lakh per person per bank, in case the bank fails." },
+    { id: "blended", label: "Blended return", re: "blended return",
+      def: "The average yearly return of your whole plan, with each part weighted by how much money is in it." }
+  ];
+  var TERM_BY_ID = {};
+  TERMS.forEach(function (t) {
+    t.rx = new RegExp("(^|[^A-Za-z0-9])(" + t.re + ")(?![A-Za-z0-9])", t.cs ? "" : "i");
+    TERM_BY_ID[t.id] = t;
+  });
+
+  /** The first match of any term not in `skip`, as { term, index, text }, or null. */
+  function firstTermMatch(text, skip) {
+    var best = null;
+    TERMS.forEach(function (t) {
+      if (skip[t.id]) return;
+      var m = t.rx.exec(text);
+      if (!m) return;
+      var idx = m.index + m[1].length;
+      if (!best || idx < best.index || (idx === best.index && m[2].length > best.text.length)) best = { term: t, index: idx, text: m[2] };
+    });
+    return best;
+  }
+
+  /** Every term used in a piece of text, in order of first appearance. */
+  function termsIn(text, skip) {
+    var found = [], seen = Object.assign({}, skip || {});
+    var m;
+    while ((m = firstTermMatch(text, seen))) { found.push(m.term); seen[m.term.id] = true; }
+    return found.sort(function (a, b) { return text.search(a.rx) - text.search(b.rx); });
+  }
+
+  /* ---- Per-question explainers ----
+     Plain words on what each question is asking and why. They explain the
+     words, never the answer: where a question tests one specific term, that
+     term's definition is held back (`avoid`) and the results explain it. */
+
+  var QUESTION_HELP = {
+    age: { text: "We ask so your plan fits your stage of life: how many years your money has to grow, and how much up-and-down it can handle. It doesn't affect your score." },
+    monthly_income: { text: "Your \"take-home\" is what actually lands in your account each month, after tax and deductions. It's only used to size your plan in rupees, and a rough number is fine." },
+    budgeting_expense_tracking: { text: "Tracking expenses just means knowing where your money goes each month: in a notebook, a spreadsheet or an app. There's no wrong answer here; be honest." },
+    budgeting_needs_wants: { text: "A \"need\" is something you'd really struggle without. A \"want\" is nice to have but optional. Pick the option that's most clearly optional." },
+    budgeting_savings_rate: { text: "If ₹100 comes in, how many rupees do you keep instead of spending? That number is your savings rate as a percentage. A rough guess is fine." },
+    budgeting_fixed_expenses: { text: "Fixed expenses are the same (or nearly the same) every month and hard to cut quickly. Flexible ones change with your choices. Tick every fixed one." },
+    budgeting_recurring_bills: { text: "Recurring bills come every month: rent, loan instalments, electricity, phone. \"Auto-debit\" means your bank pays them automatically on the due date." },
+    retiree_budget_fixed_income: { text: "When a pension or withdrawals are your main income, a budget makes sure spending doesn't outrun it, especially as prices rise each year." },
+    saving_emergency_fund_months: { text: "Imagine your income stopped. How many months of essential costs (food, rent, bills, medicines) could you pay from savings you can get to within a few days? 0 is a fine answer." },
+    saving_emergency_fund_where: { text: "An emergency fund is money kept for surprises. Think about what matters most for that money: growth, safety, or being able to get it quickly." },
+    saving_fd_vs_savings: { text: "Banks pay you interest for keeping money with them. This asks which of two common bank products usually pays more." },
+    saving_emergency_fund_purpose: { text: "This asks what an emergency fund is really for. Think about the moment you'd actually use it." },
+    retiree_scam_digital_arrest: { text: "Fraudsters sometimes pose as police or officials on video calls to frighten people into paying. Think about what a real officer would, and wouldn't, ask for.", avoid: ["otp"] },
+    saving_upi_safety: { text: "UPI is the system behind apps like Google Pay, PhonePe and Paytm. This asks how to handle a payment request from a stranger.", avoid: ["upipin", "otp"] },
+    saving_automatic_transfer: { text: "Saving \"automatically\" means money moves to savings or investments on a set day without you doing anything, before you get a chance to spend it." },
+    saving_health_insurance: { text: "Health insurance pays hospital bills for you. A group policy from an employer or college covers you only while you're there; a personal policy stays with you." },
+    dependents: { text: "Dependents are people who rely on your income to live: a partner, children or parents. It shapes how much protection your plan needs. Not scored." },
+    saving_term_insurance: { text: "Life insurance pays your family if you die. Different kinds of policy give very different amounts of cover for the same premium." },
+    debt_high_interest_status: { text: "High-interest debt is borrowing that costs a lot each year, like an unpaid credit card bill or an instant-loan app. A home or education loan isn't what we mean here." },
+    debt_payoff_plan: { text: "This asks how you're tackling that debt. Paying off loans on a plan, rather than as money allows, clears them much faster." },
+    debt_good_vs_bad: { text: "\"Good debt\" is borrowing that can build value over time. \"Bad debt\" pays for things that lose value quickly, often at high interest. Tick every good one." },
+    debt_interest_type: { text: "If you don't pay a credit card bill in full, the card company charges interest on what's left. This asks roughly how much that is per year." },
+    debt_student_loan_interest: { text: "An education loan usually lets you delay repayments until after your course (a \"moratorium\"). This asks what happens to the interest during that time." },
+    debt_credit_card_habit: { text: "A credit card lets you spend now and pay the bank back later. This asks which habit keeps it free and safe to use." },
+    debt_emi_share: { text: "If ₹100 comes in, how many rupees go straight to loan instalments (EMIs)? A rough share is fine." },
+    debt_loan_priority: { text: "When you have spare money and two loans, which one should get it first? Compare what each loan costs you every year." },
+    retiree_debt_in_retirement: { text: "This is about any loan you're still repaying, and how big the monthly instalment is compared with your income." },
+    risk_market_drop_reaction: { text: "Investments like shares go up and down. This isn't a test: pick the reaction that's honestly closest to how you'd feel. 1 means you'd want out; 5 means you'd stay calm." },
+    risk_equity_experience: { text: "\"Equity\" means shares, directly or through a mutual fund. This asks whether you've lived through a big fall in their price before." },
+    risk_volatility_understanding: { text: "\"Volatility\" is how much a price jumps up and down in the short term. This asks which of these swings the most." },
+    risk_horizon: { text: "Your \"time horizon\" is how long until you need the money. Think of your next big planned expense." },
+    retiree_inflation_awareness: { text: "Over a long retirement, several things can shrink what your money can buy. This asks which one usually does the most damage." },
+    compounding_rule_of_72: { text: "The Rule of 72 is a quick mental-maths shortcut for how fast money doubles. If you haven't heard of it, \"I don't know\" is fine, and we'll explain it in your results.", avoid: ["rule72"] },
+    compounding_early_start: { text: "Two people save the same amount each month. The only difference is when they start. Think about how many years each one's money has to grow." },
+    compounding_pay_rise: { text: "When your income goes up, what you do with the extra can matter a lot over the years. Think long term." },
+    compounding_basics_probe: { text: "\"Compounded yearly\" means that each year, interest is added to your balance, and next year's interest is worked out on that bigger balance." },
+    investing_index_fund_def: { text: "This tests whether you know a particular kind of mutual fund, so we won't define it here. If you're unsure, say so, and your results will explain it.", avoid: ["index"] },
+    investing_first_step: { text: "With only a little money, what's a sensible way to begin investing? Think about which option you could actually keep doing." },
+    investing_scam_check: { text: "Groups on Telegram, WhatsApp and Instagram often promise big, \"guaranteed\" returns. This asks how to judge a promise like that." },
+    investing_elss_lockin: { text: "ELSS is a tax-saving mutual fund. Once you invest, you can't take the money out for a set period (the \"lock-in\"). This asks how long that is." },
+    investing_80c_options: { text: "Section 80C lets you pay less income tax by putting money into certain approved options, under the old tax regime only. Tick every one that qualifies." },
+    investing_tax_regime: { text: "India's new tax regime has a limit below which a salaried person pays no income tax at all. This asks roughly where that limit is." },
+    retiree_scss_awareness: { text: "This tests whether you know a particular government scheme, so we won't define it here. If you're unsure, say so, and your results will explain it.", avoid: ["scss"] },
+    retiree_swp_def: { text: "This tests whether you know a particular mutual fund feature, so we won't define it here. If you're unsure, say so, and your results will explain it.", avoid: ["swp"] },
+    investing_basics_probe: { text: "This asks why putting money into many companies is usually safer than betting it all on one.", avoid: ["divers"] },
+    retirement_ppf_lockin: { text: "PPF is a government-backed long-term savings account. \"Maturity\" is when the account's term ends and you can take all the money out." },
+    retirement_readiness: { text: "There's no right answer. Just say how confident you honestly feel; it helps us know where to focus." },
+    retirement_nps_tax: { text: "NPS is a government-regulated pension account. Under the old tax regime, a special section of tax law gives an extra deduction for it. This asks which section." },
+    retirement_epf_job_change: { text: "EPF is the retirement savings taken from your salary each month. This asks what's usually best to do with it when you switch jobs." },
+    retirement_corpus_estimate: { text: "Your \"corpus\" is the total savings you'd retire with. Think of it as a multiple of what you spend in a year: if you spend ₹5 lakh a year, 10× would be ₹50 lakh." },
+    retiree_runway_years: { text: "If you keep withdrawing at today's pace, roughly how many years would your savings last? A rough guess is fine." },
+    retiree_healthcare_fund: { text: "Medical costs often rise with age. This asks whether you've set aside insurance or money just for health, separate from your everyday savings." },
+    retiree_withdrawal_rate: { text: "If you take out a little of your savings every year, how much can you take so the money is likely to last your whole retirement? Think about growth, inflation and time." },
+    retiree_nomination_will: { text: "A \"nominee\" is the person you name to receive an account's money if you die. A will says who gets everything else. Both make things easier for your family." },
+    retiree_form_15h: { text: "Banks deduct tax (TDS) from FD interest unless you tell them your income is below the taxable limit. This asks which form does that.", avoid: ["15h"] }
+  };
+
+  function questionHelp(q) {
+    return QUESTION_HELP[q.code] || (q.clarifies && QUESTION_HELP[q.clarifies]) || null;
+  }
+
+  /* ---- Why each knowledge answer is right (shown in "Review your answers") ---- */
+
+  var REVIEW_WHY = {
+    budgeting_needs_wants: "A phone that still works fine doesn't need replacing, so an upgrade is a want. Rent, food, medicines and insurance protect your basic living.",
+    budgeting_fixed_expenses: "Rent and your mobile plan cost about the same every month and can't be cut quickly. Outings and food delivery change with your choices, so they're flexible, and they're the first place to trim.",
+    saving_emergency_fund_where: "Emergency money has to be safe and available the same day. Shares might be down just when you need them, jewellery is slow to sell, and a locked FD can't be touched.",
+    saving_fd_vs_savings: "You agree to leave FD money for a fixed time, so banks reward you with a higher rate. A savings account pays less because you can withdraw any day.",
+    saving_emergency_fund_purpose: "It's a cushion for surprises (a job loss, a hospital bill) so you don't have to borrow at high interest or sell investments at a bad time. Growth isn't its job.",
+    debt_good_vs_bad: "An education loan and, later, a home loan can build long-term value: skills that raise income, and a home. BNPL for a phone or an app loan for a trip pays for things that are quickly gone, often at high interest.",
+    debt_interest_type: "Cards typically charge about 3–3.75% a month on unpaid balances: roughly 36–45% a year. That's far more than almost any investment earns, so always pay the full bill.",
+    debt_student_loan_interest: "On a normal education loan, interest keeps adding up while you study. If you don't pay it, it's added to the loan, so you pay interest on interest later. Paying just the interest during the course helps a lot.",
+    saving_upi_safety: "You never need to enter your UPI PIN to receive money; entering it always sends money out of your account. \"Sent by mistake\" requests are a common trick. Check your bank app and report the request.",
+    retiree_scam_digital_arrest: "No police or government agency arrests anyone over a video call or asks for money to \"clear your name\". Hang up, don't share OTPs, and report it on 1930 or cybercrime.gov.in.",
+    retiree_withdrawal_rate: "Taking out about 3–4% a year gives savings a good chance of lasting 25–30 years, because the rest can keep growing and keep pace with inflation. At 8–10% a year, money often runs out far too soon.",
+    retiree_form_15h: "Form 15H is for people aged 60 or over (15G is for everyone else). Submitting it to your bank each year stops TDS on FD interest when your total income is below the taxable limit.",
+    investing_scam_check: "No genuine investment can guarantee 10% a month: that's over 200% a year. Early \"profits\" are usually paid from newer members' money until the scheme collapses. Testing it with a small amount is how many people get pulled in.",
+    debt_loan_priority: "Extra money should go to the most expensive loan first. A 36% card costs over four times as much each year as an 8.5% home loan, whatever the balance.",
+    risk_volatility_understanding: "An equity mutual fund's value moves with the stock market every day and can fall sharply in the short term. FDs, PPF and savings accounts pay steady interest and don't swing.",
+    retiree_inflation_awareness: "At 6% inflation, prices double in about 12 years. Fixed income that doesn't grow quietly buys less and less over a 20-year retirement. Daily market ups and downs matter much less over that time.",
+    compounding_rule_of_72: "Divide 72 by the yearly return: 72 ÷ 8 = 9, so money roughly doubles in 9 years at 8%. At 12% it would be about 6 years.",
+    compounding_early_start: "Person A's money grows for 10 extra years, and because of compounding those early years count the most. Starting 10 years earlier often beats investing much more, later.",
+    compounding_basics_probe: "Year 1: ₹10,000 + 10% = ₹11,000. Year 2: ₹11,000 + 10% = ₹12,100. The extra ₹100 is interest earned on the first year's interest: that's compounding.",
+    investing_index_fund_def: "An index fund simply buys all the companies in an index, like the Nifty 50, in the same proportions. No manager is trying to beat the market, so fees stay low. Nothing in it is guaranteed.",
+    investing_elss_lockin: "ELSS has a 3-year lock-in from each investment date, the shortest of the 80C options. PPF, for comparison, runs 15 years and a tax-saver FD 5.",
+    investing_80c_options: "PPF, ELSS and the 5-year tax-saver FD all qualify for 80C, up to ₹1.5 lakh a year in total, under the old regime only. A regular savings account doesn't.",
+    investing_tax_regime: "Under the new regime, the section 87A rebate makes income up to ₹12 lakh tax-free, and salaried people also get a ₹75,000 standard deduction. Together that's ₹12.75 lakh of salary with no income tax.",
+    investing_basics_probe: "If your money is spread across many companies, one of them doing badly hurts only a little. It doesn't guarantee a higher return or avoid tax; it just lowers the damage from any single failure.",
+    retiree_scss_awareness: "The Senior Citizens' Savings Scheme is a government-backed deposit for people 60 and over (55 in some cases). It pays interest every quarter, which suits a retiree's regular income needs.",
+    retiree_swp_def: "An SWP pays you a fixed amount from your mutual fund at regular intervals, like a self-made pension. It's the opposite of a SIP, which puts money in.",
+    retirement_ppf_lockin: "A PPF account matures after 15 years, and you can extend it in blocks of 5 years. Partial withdrawals are allowed from the 7th year.",
+    retirement_nps_tax: "80CCD(1B) gives an extra ₹50,000 deduction for your own NPS contributions, on top of the ₹1.5 lakh 80C limit, under the old regime only. 80D is health insurance, 80G is donations and 80TTA is savings interest."
+  };
+
+  /* ---- Short lessons, one per category ----
+     These teach the idea behind each category. They deliberately avoid the
+     exact figures the assessment asks about (card rates, lock-ins, withdrawal
+     rates); those are explained in "Review your answers" afterwards. */
+
+  var LESSONS = [
+    { id: "budgeting", cat: "BUDGETING", title: "Budgeting: know where your money goes",
+      body: [
+        "A budget is simply a plan for your money made before the month starts, instead of wondering where it went afterwards.",
+        "A popular starting point is 50/30/20: about half on needs (rent, food, bills), up to 30% on wants (eating out, gadgets, trips), and at least 20% saved or invested. It's a guide, not a law.",
+        "Needs are things you'd struggle to live without. Wants are nice to have. The line can blur, and that's fine: the point is to notice it."
+      ],
+      example: function () { return "If ₹30,000 comes in each month: roughly ₹15,000 for needs, ₹9,000 for wants, and ₹6,000 saved."; },
+      takeaway: "Track your spending for one month, even roughly. You'll learn more than any rule can teach you.",
+      check: { q: "Which of these is a want?", options: ["Rent", "Groceries", "A second streaming subscription", "The electricity bill"], correct: 2,
+        explain: "Rent, food and electricity are hard to live without. A second subscription is nice, but optional." } },
+    { id: "saving", cat: "SAVING", title: "Saving: build your safety cushion first",
+      body: [
+        "An emergency fund is money kept aside only for surprises: losing your income, a hospital bill, an urgent trip home.",
+        "Aim for a few months of essential spending (3 to 6 is common, more if you're retired or your income is irregular). Build it before you start investing.",
+        "It should be safe and quick to reach. That's why it isn't kept in shares, whose value might be down exactly when you need it.",
+        "Insurance is part of your safety net too: health insurance for hospital bills, and term life cover if others depend on your income."
+      ],
+      example: function () { return "If essentials cost ₹20,000 a month, a 3-month fund is ₹60,000. Putting aside ₹5,000 a month gets you there in a year."; },
+      takeaway: "Without a cushion, one surprise can push you into expensive debt.",
+      check: { q: "Your essentials cost ₹15,000 a month. How big is a 4-month emergency fund?", options: ["₹15,000", "₹40,000", "₹60,000", "₹1,50,000"], correct: 2,
+        explain: "4 months × ₹15,000 = ₹60,000." } },
+    { id: "debt", cat: "DEBT", title: "Debt: good, bad and expensive",
+      body: [
+        "Borrowing isn't always bad. A loan that builds lasting value, like an education loan or later a home loan, can make sense.",
+        "The danger is expensive debt: credit card bills you don't clear in full, Buy Now Pay Later, and instant-loan apps. Their interest is far higher than any investment reliably earns, so the debt grows faster than your savings can.",
+        "The golden rule for credit cards: pay the full bill by the due date, every month. Paying only the minimum due is how small balances turn into big ones."
+      ],
+      example: function () { return "Two loans and ₹5,000 spare? Compare their yearly interest rates, not their sizes, and put the spare money on the costlier one."; },
+      takeaway: "Clearing expensive debt is a guaranteed return. Do it before you invest.",
+      check: { q: "You have ₹10,000 spare and an unpaid credit card bill. What's usually best?", options: ["Invest it in shares", "Pay off the card", "Leave it in a savings account", "Split it three ways"], correct: 1,
+        explain: "Card interest is far higher than what shares or savings reliably earn, so paying it off gives you the best \"return\"." } },
+    { id: "risk", cat: "RISK", title: "Risk: why prices go up and down",
+      body: [
+        "Every investment trades safety against growth. FDs and savings accounts barely move, but grow slowly. Shares (equity) can grow much more over many years, but can fall 20–30% in a bad year.",
+        "That's why time matters. Money you need within a year or two belongs somewhere steady. Money you won't touch for seven years or more can wait out the ups and downs.",
+        "Spreading money across many companies, and across types of investment (shares, debt, gold), means no single bad investment can sink you."
+      ],
+      example: function () { return "Invest ₹10,000 in shares and it could be ₹8,000 after a bad month. If you don't need it for years, waiting has usually worked out better than selling in a panic."; },
+      takeaway: "The right amount of risk depends on when you need the money, not on how brave you feel today.",
+      check: { q: "You'll need money for college fees in 8 months. Where is it best kept?", options: ["Small-company shares", "A fixed deposit or savings account", "Crypto", "One hot stock tip"], correct: 1,
+        explain: "With under a year to go, you can't wait out a fall. Keep it somewhere that doesn't swing." } },
+    { id: "compounding", cat: "COMPOUNDING", title: "Compounding: why starting early wins",
+      body: [
+        "Compounding means your money earns returns, and then those returns earn returns too. It's slow at first and speeds up over time.",
+        "Because it snowballs, time matters more than the amount. A small amount invested early can end up worth more than a bigger amount invested later.",
+        "That's also why raising what you invest a little every year, as your income grows, has such a big effect."
+      ],
+      example: function () {
+        return "₹2,000 a month growing at 12% a year becomes about " + formatAmount(sipFutureValue(2000, 12, 10)) + " after 10 years, " +
+          formatAmount(sipFutureValue(2000, 12, 20)) + " after 20, and " + formatAmount(sipFutureValue(2000, 12, 30)) +
+          " after 30. You'd have put in only ₹2.4 lakh, ₹4.8 lakh and ₹7.2 lakh.";
+      },
+      takeaway: "The best time to start is as early as you can, even with a small amount.",
+      check: { q: "₹1,000 grows 10% a year, compounded. What is it after 2 years?", options: ["₹1,100", "₹1,200", "₹1,210", "₹2,000"], correct: 2,
+        explain: "Year 1: ₹1,000 + ₹100 = ₹1,100. Year 2: ₹1,100 + ₹110 = ₹1,210. The extra ₹10 is interest on interest." } },
+    { id: "investing", cat: "INVESTING", title: "Investing: SIPs and index funds",
+      body: [
+        "A mutual fund pools money from many people and invests it for them. An index fund is the simplest kind: it just buys every company in an index such as the Nifty 50, so costs are low and there's no star manager to trust.",
+        "A SIP invests a fixed amount automatically every month, even ₹500. You buy more units when prices are low and fewer when they're high, so you never have to guess the \"right\" moment.",
+        "To start: complete KYC once (PAN and Aadhaar), choose the Direct plan of a fund (lower fees than Regular), and set the SIP date a few days after your money arrives."
+      ],
+      example: function () {
+        return "₹1,000 a month in an index fund for 15 years, if it grows about " + ASSUMED_RATES.mf + "% a year on average, could become about " +
+          formatAmount(sipFutureValue(1000, ASSUMED_RATES.mf, 15)) + ". You'd have put in ₹1.8 lakh. Real returns vary, and some years are negative.";
+      },
+      takeaway: "Anyone promising \"guaranteed\" high returns is almost certainly running a scam.",
+      check: { q: "What makes a SIP useful for a beginner?", options: ["It guarantees profits", "It invests automatically, so you don't have to time the market", "It avoids all tax", "It only buys gold"], correct: 1,
+        explain: "A SIP doesn't guarantee anything. Its power is the habit: steady, automatic investing without guessing." } },
+    { id: "retirement", cat: "RETIREMENT", title: "Retirement: planning the long run",
+      body: [
+        "Retirement can last 25 years or more, and prices keep rising the whole time. So the goal isn't just a big number: it's money that keeps its buying power.",
+        "In India the main building blocks are EPF (taken from your salary), PPF (government-backed and long-term), and NPS (a low-cost pension account). Equity mutual funds add growth on top.",
+        "Once retired, the question flips: how much can you take out each year so the money lasts? Withdrawing only a small share each year, and keeping some in growth investments, helps it last."
+      ],
+      example: function () { return "At 6% inflation, ₹50,000 of monthly spending today will need about " + formatAmount(50000 * Math.pow(1.06, 20)) + " a month in 20 years to buy the same things."; },
+      takeaway: "Start early, don't withdraw retirement savings when you change jobs, and plan for inflation.",
+      check: { q: "When you change jobs, what's usually best for your EPF?", options: ["Withdraw it and spend it", "Transfer it to the new employer", "Forget about it", "Withdraw half"], correct: 1,
+        explain: "Transferring keeps it growing for retirement, and keeps your years of service unbroken." } }
+  ];
+  var LESSON_BY_CAT = {};
+  LESSONS.forEach(function (l) { LESSON_BY_CAT[l.cat] = l; });
+
+  function lessonsDone() {
+    try { return JSON.parse(localStorage.getItem(LESSONS_KEY)) || []; } catch (e) { return []; }
+  }
+  function markLessonDone(id) {
+    var done = lessonsDone();
+    if (done.indexOf(id) === -1) done.push(id);
+    try { localStorage.setItem(LESSONS_KEY, JSON.stringify(done)); } catch (e) { /* not remembered */ }
+  }
+
+  /* ---- Simple mode on/off ---- */
+
+  function isSimple() { return document.body.classList.contains("simple"); }
+
+  function storedSimple() {
+    try { var v = localStorage.getItem(SIMPLE_KEY); return v === null ? null : v === "on"; } catch (e) { return null; }
+  }
+
+  function setSimple(on, remember) {
+    document.body.classList.toggle("simple", on);
+    if (remember !== false) { try { localStorage.setItem(SIMPLE_KEY, on ? "on" : "off"); } catch (e) { /* not remembered */ } }
+    $("simple-toggle").setAttribute("aria-pressed", on ? "true" : "false");
+    document.querySelectorAll("#comfort-group [data-simple]").forEach(function (b) {
+      b.setAttribute("aria-pressed", (b.getAttribute("data-simple") === "on") === on ? "true" : "false");
+    });
+    if ($("q-explain").style.display !== "none") $("q-explain").open = on;
+    if (on) glossifyAll(); else unglossifyAll();
+  }
+
+  $("simple-toggle").addEventListener("click", function () { setSimple(!isSimple()); });
+  document.querySelectorAll("#comfort-group [data-simple]").forEach(function (b) {
+    b.addEventListener("click", function () { setSimple(b.getAttribute("data-simple") === "on"); });
+  });
+
+  /* ---- Inline jargon ----
+     Wraps the first use of each term inside [data-glossify] containers in a
+     button that opens its definition. A MutationObserver re-applies it after
+     any screen re-renders, and skips text that is still streaming in. */
+
+  var questionAvoid = {};
+
+  function glossify(root, skip) {
+    var used = Object.assign({}, skip || {});
+    root.querySelectorAll(".term").forEach(function (t) { used[t.getAttribute("data-term")] = true; });
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (n) {
+        if (!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        var p = n.parentElement;
+        if (!p || p.closest("button, a, input, textarea, select, summary, svg, .term, .streaming-cursor")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (node) {
+      var m;
+      while (node && (m = firstTermMatch(node.nodeValue, used))) {
+        var hit = node.splitText(m.index);
+        var rest = hit.splitText(m.text.length);
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "term";
+        btn.setAttribute("data-term", m.term.id);
+        btn.setAttribute("aria-haspopup", "dialog");
+        btn.textContent = hit.nodeValue;
+        hit.parentNode.replaceChild(btn, hit);
+        used[m.term.id] = true;
+        node = rest;
+      }
+    });
+  }
+
+  function unglossifyAll() {
+    document.querySelectorAll(".term").forEach(function (t) {
+      var parent = t.parentNode;
+      parent.replaceChild(document.createTextNode(t.textContent), t);
+      parent.normalize();
+    });
+  }
+
+  var glossObserver = new MutationObserver(function () {
+    if (!isSimple()) return;
+    clearTimeout(glossObserver.timer);
+    glossObserver.timer = setTimeout(glossifyAll, 300);
+  });
+  function observeGloss() { glossObserver.observe($("app-shell"), { childList: true, subtree: true, characterData: true }); }
+
+  function glossifyAll() {
+    if (!isSimple()) return;
+    glossObserver.disconnect();
+    document.querySelectorAll("#app-shell [data-glossify]").forEach(function (el) {
+      glossify(el, el.closest("#view-questionnaire") ? questionAvoid : null);
+    });
+    observeGloss();
+  }
+  observeGloss();
+
+  /* ---- Definition popover ---- */
+
+  var termAnchor = null;
+
+  function openTerm(id, anchor) {
+    var t = TERM_BY_ID[id];
+    if (!t) return;
+    var pop = $("term-pop");
+    $("term-pop-title").textContent = t.label;
+    $("term-pop-text").textContent = t.def;
+    pop.hidden = false;
+    var r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+    var left = Math.min(Math.max(12, r.left + r.width / 2 - w / 2), window.innerWidth - w - 12);
+    var top = r.bottom + 8;
+    if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 8);
+    pop.style.left = left + "px";
+    pop.style.top = top + "px";
+    termAnchor = anchor;
+    $("term-pop-close").focus({ preventScroll: true });
+  }
+
+  function closeTerm(restoreFocus) {
+    if ($("term-pop").hidden) return;
+    $("term-pop").hidden = true;
+    if (restoreFocus && termAnchor && document.contains(termAnchor)) termAnchor.focus({ preventScroll: true });
+    termAnchor = null;
+  }
+
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest && e.target.closest("[data-term]");
+    if (t) { e.preventDefault(); openTerm(t.getAttribute("data-term"), t); return; }
+    if (!e.target.closest || !e.target.closest("#term-pop")) closeTerm(false);
+  });
+  $("term-pop-close").addEventListener("click", function () { closeTerm(true); });
+  $("term-pop-all").addEventListener("click", function () {
+    var from = $("term-pop-title").textContent;
+    closeTerm(false);
+    openGlossary(from.replace(/\s*\(.*\)$/, ""));
+  });
+  window.addEventListener("resize", function () { closeTerm(false); });
+  window.addEventListener("scroll", function () { closeTerm(false); }, true);
+
+  /* ---- Modal: lessons and the glossary ---- */
+
+  var modalReturnFocus = null;
+
+  function openModal(title, sub, bodyHtml, foot) {
+    if ($("mc-modal").hidden) modalReturnFocus = document.activeElement;
+    $("mc-modal-title").textContent = title;
+    $("mc-modal-sub").textContent = sub || "";
+    $("mc-modal-body").innerHTML = bodyHtml;
+    $("mc-modal-body").scrollTop = 0;
+    var f = $("mc-modal-foot");
+    f.innerHTML = "";
+    (foot || []).forEach(function (b) {
+      var el = document.createElement("button");
+      el.type = "button";
+      el.className = "btn btn-sm " + (b.primary ? "btn-primary" : "btn-ghost");
+      el.textContent = b.label;
+      el.addEventListener("click", b.onClick);
+      f.appendChild(el);
+    });
+    f.style.display = foot && foot.length ? "" : "none";
+    $("mc-modal").hidden = false;
+    document.body.classList.add("modal-open");
+    $("mc-modal-close").focus();
+  }
+
+  function closeModal() {
+    if ($("mc-modal").hidden) return;
+    closeTerm(false);
+    $("mc-modal").hidden = true;
+    document.body.classList.remove("modal-open");
+    if (modalReturnFocus && document.contains(modalReturnFocus)) modalReturnFocus.focus();
+    modalReturnFocus = null;
+    if ($("view-dashboard").style.display !== "none") renderLessonGrid();
+  }
+
+  $("mc-modal-close").addEventListener("click", closeModal);
+  $("mc-modal").addEventListener("click", function (e) { if (e.target === $("mc-modal")) closeModal(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (!$("term-pop").hidden) { closeTerm(true); e.stopImmediatePropagation(); return; }
+      if (!$("mc-modal").hidden) { closeModal(); e.stopImmediatePropagation(); return; }
+    }
+    // Keep Tab inside the open modal.
+    if (e.key === "Tab" && !$("mc-modal").hidden) {
+      var f = Array.prototype.filter.call($("mc-modal").querySelectorAll("button, input, a[href]"), function (el) { return !el.disabled && el.offsetParent !== null; });
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  }, true);
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+  }
+
+  function openLesson(id) {
+    var i = LESSONS.findIndex(function (l) { return l.id === id; });
+    if (i === -1) return;
+    var l = LESSONS[i], next = LESSONS[(i + 1) % LESSONS.length];
+    var html = l.body.map(function (p) { return "<p>" + escapeHtml(p) + "</p>"; }).join("") +
+      '<div class="lesson-example"><span class="lx-label">Example</span>' + escapeHtml(l.example()) + "</div>" +
+      '<p class="lesson-takeaway">' + escapeHtml(l.takeaway) + "</p>" +
+      '<div class="lesson-check"><span class="lx-label">Quick check</span><p class="lc-q">' + escapeHtml(l.check.q) + '</p><div class="options" role="group" aria-label="' + escapeHtml(l.check.q) + '">' +
+      l.check.options.map(function (o, j) {
+        return '<button type="button" class="option" data-check="' + j + '"><span class="badge">' + "ABCD".charAt(j) + "</span><span>" + escapeHtml(o) + "</span></button>";
+      }).join("") + '</div><p class="lesson-feedback" id="lesson-feedback" role="status"></p></div>';
+    openModal(l.title, CATEGORY_META[l.cat].label + " · about 2 minutes" + (lessonsDone().indexOf(l.id) !== -1 ? " · done ✓" : ""), html, [
+      { label: "Close", onClick: closeModal },
+      { label: "Next: " + next.title.split(":")[0] + " →", primary: true, onClick: function () { openLesson(next.id); } }
+    ]);
+    var body = $("mc-modal-body");
+    body.querySelectorAll("[data-check]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var pick = +b.getAttribute("data-check"), right = pick === l.check.correct;
+        body.querySelectorAll("[data-check]").forEach(function (o) {
+          o.disabled = true;
+          var j = +o.getAttribute("data-check");
+          if (j === l.check.correct) o.classList.add("right");
+          else if (j === pick) o.classList.add("wrong");
+        });
+        $("lesson-feedback").textContent = (right ? "Correct. " : "Not quite. ") + l.check.explain;
+        markLessonDone(l.id);
+      });
+    });
+    if (isSimple()) glossify(body);
+  }
+
+  function openGlossary(query) {
+    var html = '<input type="search" class="gloss-search" id="gloss-search" placeholder="Search, e.g. SIP, FD, inflation" aria-label="Search money words" />' +
+      '<div class="gloss-list" id="gloss-list"></div>';
+    openModal("Money words, explained", TERMS.length + " terms in plain language", html, []);
+    var input = $("gloss-search");
+    var sorted = TERMS.slice().sort(function (a, b) { return a.label.localeCompare(b.label); });
+    function draw() {
+      var q = input.value.trim().toLowerCase();
+      var list = sorted.filter(function (t) { return !q || t.label.toLowerCase().indexOf(q) !== -1 || t.def.toLowerCase().indexOf(q) !== -1; });
+      $("gloss-list").innerHTML = list.length
+        ? list.map(function (t) { return '<div class="gloss-item"><h4>' + escapeHtml(t.label) + "</h4><p>" + escapeHtml(t.def) + "</p></div>"; }).join("")
+        : '<p class="gloss-empty">No match. Try Ask Compass on the results screens, or a simpler word.</p>';
+    }
+    input.value = query || "";
+    input.addEventListener("input", draw);
+    draw();
+    input.focus();
+  }
+
+  $("glossary-btn").addEventListener("click", function () { openGlossary(""); });
+  document.addEventListener("click", function (e) {
+    var l = e.target.closest && e.target.closest("[data-lesson]");
+    if (l) openLesson(l.getAttribute("data-lesson"));
+  });
+
+  /* ---- Advanced cards fold away in Simple mode ---- */
+
+  var CHEVRON = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  document.querySelectorAll("[data-advanced]").forEach(function (card, i) {
+    if (!card.id) card.id = "adv-card-" + i;
+    var label = card.getAttribute("data-advanced-label"), sub = card.getAttribute("data-advanced-sub");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "adv-toggle";
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", card.id);
+    b.innerHTML = '<span><span class="adv-t">Show: ' + label + '</span><br /><span class="adv-sub">' + sub + "</span></span>" + CHEVRON;
+    b.addEventListener("click", function () {
+      var open = !card.classList.contains("adv-open");
+      card.classList.toggle("adv-open", open);
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.querySelector(".adv-t").textContent = (open ? "Hide: " : "Show: ") + label;
+    });
+    card.parentNode.insertBefore(b, card);
+  });
+
+  /* ---- Hooks called from the screens above ---- */
+
+  function renderQuestionHelp(q) {
+    var help = questionHelp(q);
+    questionAvoid = {};
+    (help && help.avoid || []).forEach(function (id) { questionAvoid[id] = true; });
+    $("q-explain").style.display = help ? "" : "none";
+    if (!help) return;
+    $("q-explain-text").textContent = help.text;
+    $("q-explain").open = isSimple();
+    var text = [q.text, q.hint || ""].concat((q.options || []).map(function (o) { return o[1]; })).join(" • ");
+    var found = termsIn(text, questionAvoid).slice(0, 6);
+    $("q-words").innerHTML = found.length
+      ? '<span class="q-words-label">Words to know</span>' + found.map(function (t) {
+          return '<button type="button" class="term-chip" data-term="' + t.id + '" aria-haspopup="dialog">' + escapeHtml(t.label.replace(/\s*\(.*\)$/, "")) + "</button>";
+        }).join("")
+      : "";
+  }
+
+  function renderLessonGrid() {
+    var done = lessonsDone();
+    $("lesson-grid").innerHTML = LESSONS.map(function (l) {
+      var isDone = done.indexOf(l.id) !== -1;
+      return '<button type="button" class="glass lesson-card' + (isDone ? " done" : "") + '" data-lesson="' + l.id + '">' +
+        '<span class="lc-cat"><span class="dot" style="background:' + CATEGORY_META[l.cat].color + ';"></span>' + CATEGORY_META[l.cat].label + "</span>" +
+        '<span class="lc-title">' + escapeHtml(l.title.split(": ")[1] || l.title) + "</span>" +
+        '<span class="lc-meta">' + (isDone ? "✓ Done · read again" : "2 min read + quick check") + "</span></button>";
+    }).join("");
+  }
+
+  function lessonLink(cat, text) {
+    var l = LESSON_BY_CAT[cat];
+    return l ? '<button type="button" class="text-link" data-lesson="' + l.id + '">' + (text || "Read the 2-minute lesson") + "</button>" : "";
+  }
+
+  function breakdownLearnHtml(cat, val) {
+    if (val === null || val >= 80 || !LESSON_BY_CAT[cat]) return "";
+    return '<button type="button" class="text-link breakdown-learn" data-lesson="' + LESSON_BY_CAT[cat].id + '" aria-label="Learn about ' +
+      CATEGORY_META[cat].label + '">Learn ›</button>';
+  }
+
+  function renderPlainScore() {
+    var r = state.lastScore;
+    var ranked = Object.keys(r.breakdown).filter(function (c) { return r.breakdown[c] !== null; })
+      .sort(function (a, b) { return r.breakdown[b] - r.breakdown[a]; });
+    var unknowns = Object.keys(state.answers).filter(function (c) { return state.answers[c] && state.answers[c].unknown; }).length;
+    var html = "<h3>You scored " + r.total + " out of 100</h3>" +
+      "<p>This score shows how well you know everyday money ideas. It isn't about how much money you have, and there's no pass or fail. " +
+      (r.total >= 70 ? "You already know a lot of this well." : r.total >= 40 ? "You've got a good base to build on." : "Everyone starts somewhere, and the gaps below are exactly what to learn next.") + "</p>";
+    if (ranked.length >= 2) {
+      var best = ranked[0], worst = ranked[ranked.length - 1];
+      html += "<p>You did best in <b>" + CATEGORY_META[best].label.toLowerCase() + "</b> (" + r.breakdown[best] + "%). " +
+        (r.breakdown[worst] < r.breakdown[best]
+          ? "The area worth learning next is <b>" + CATEGORY_META[worst].label.toLowerCase() + "</b> (" + r.breakdown[worst] + "%). " + lessonLink(worst) + "."
+          : "Your areas are all at a similar level.") + "</p>";
+    }
+    if (unknowns) {
+      html += "<p>You answered \"I don't know\" " + unknowns + " time" + (unknowns === 1 ? "" : "s") + ". That's useful, not bad: those are the topics where a short lesson helps most. " +
+        "\"Review your answers\" further down explains each knowledge question.</p>";
+    }
+    html += "<p><b>What next:</b> read the gaps and next steps below, then look at your risk profile and your plan. Words with a dotted underline can be tapped for a definition.</p>";
+    $("plain-score-body").innerHTML = html;
+  }
+
+  function renderAnswerReview() {
+    var items = Object.keys(state.answers).map(questionByCode).filter(function (q) { return q && isKnowledgeQuestion(q); });
+    var right = 0;
+    var html = items.map(function (base) {
+      var q = presented(base), a = state.answers[base.code], labelOf = {};
+      q.options.forEach(function (o) { labelOf[o[0]] = o[1]; });
+      var correct = q.rubric.correctSet || [q.rubric.correct];
+      var mine = a.unknown ? [] : (q.type === "MULTI" ? a.selected || [] : [a.selected]);
+      var hits = mine.filter(function (c) { return correct.indexOf(c) !== -1; }).length;
+      var status = a.unknown ? "unk" : hits === correct.length && mine.length === correct.length ? "ok" : hits > 0 ? "part" : "no";
+      if (status === "ok") right++;
+      var mark = { ok: "✓", part: "½", no: "✗", unk: "?" }[status];
+      var markLabel = { ok: "Correct", part: "Partly correct", no: "Not correct", unk: "You said you didn't know" }[status];
+      var list = function (codes) { return codes.map(function (c) { return labelOf[c]; }).join("; "); };
+      return '<div class="review-item"><div class="review-q"><span class="review-mark ' + status + '" role="img" aria-label="' + markLabel + '">' + mark + "</span><span>" + escapeHtml(q.text) + "</span></div>" +
+        '<div class="review-a">' + (a.unknown ? "You said: <b>I don't know</b>" : "You said: <b>" + escapeHtml(list(mine)) + "</b>") +
+        (status === "ok" ? "" : "<br />Answer: <b>" + escapeHtml(list(correct)) + "</b>") + "</div>" +
+        (REVIEW_WHY[base.code] ? '<div class="review-why">' + escapeHtml(REVIEW_WHY[base.code]) + "</div>" : "") + "</div>";
+    }).join("");
+    $("review-card").style.display = items.length ? "" : "none";
+    $("review-count").textContent = items.length ? right + " of " + items.length + " knowledge questions right" : "";
+    $("review-list").innerHTML = html;
+    $("review-card").open = false;
+  }
+
+  function renderPlainRisk() {
+    var band = activeBand(), al = activeAllocation(), risk = state.lastRisk;
+    var rows = [
+      { v: al.equity, c: "var(--a-equity)", t: "in <b>shares</b> (equity): grows the most over many years, but can drop sharply in a bad year" },
+      { v: al.debt, c: "var(--a-debt)", t: "in <b>debt</b>: FDs, RDs and debt funds. Steadier, slower growth" },
+      { v: al.gold, c: "var(--a-gold)", t: "in <b>gold</b>: often holds up when shares fall" },
+      { v: al.cash, c: "var(--a-cash)", t: "as <b>cash</b>: a savings account or liquid fund, ready any day" }
+    ].filter(function (x) { return x.v > 0; });
+    var chose = state.selectedBand && state.selectedBand !== risk.band;
+    var why = risk.capacity < risk.tolerance
+      ? "Your finances, not your nerves, are what's holding it back. Building your emergency fund or clearing debt would allow more growth later."
+      : risk.tolerance < risk.capacity
+        ? "Your finances could handle more ups and downs, but we won't push you past what you'd feel comfortable with."
+        : "Your comfort and your finances point the same way.";
+    $("plain-risk-body").innerHTML =
+      "<h3>We're planning around " + (/^[AEIOU]/.test(band) ? "an " : "a ") + capitalize(band.toLowerCase()) + " profile</h3>" +
+      (chose ? "<p>You chose this yourself. Your answers pointed to <b>" + capitalize(risk.band.toLowerCase()) + "</b>.</p>" : "") +
+      "<p>Out of every <b>₹100</b> you invest:</p>" +
+      '<ul class="plain-split">' + rows.map(function (x) {
+        return '<li><span class="amt"><span class="sw" style="background:' + x.c + ';"></span>₹' + x.v + "</span><span>" + x.t + "</span></li>";
+      }).join("") + "</ul>" +
+      "<p><b>How we chose it:</b> we looked at how calm you'd feel if prices fell (" + risk.tolerance + "/100) and how well your money could cope with a fall (" + risk.capacity + "/100), " +
+      "and went with the more careful of the two. " + why + "</p>" +
+      "<p>Prefer a different mix? You can pick another profile further down, and your plan will follow it. " + lessonLink("RISK", "What is risk, in 2 minutes?") + "</p>";
+  }
+
+  function renderPlainInvest(plan) {
+    var snap = state.lastRisk.snapshot, al = activeAllocation(), amt = state.plan.amount;
+    var steps = priorityPlan(snap).items.filter(function (it) { return it.t !== "Invest the rest"; }).map(function (it) {
+      return "<li><b>" + it.t + (it.amt ? ": " + it.amt : "") + ".</b> " + it.d + "</li>";
+    });
+    var part = function (pct) { return formatINR(Math.round(amt * pct / 100)); };
+    var split = [];
+    if (al.equity) split.push(part(al.equity) + " in shares, through funds or directly");
+    if (al.debt) split.push(part(al.debt) + " in deposits and debt funds");
+    if (al.gold) split.push(part(al.gold) + " in gold");
+    if (al.cash) split.push(part(al.cash) + " kept as cash");
+    steps.push("<li><b>" + (steps.length ? "Then invest " : "Invest ") + formatINR(amt) + " a month.</b> Roughly " + listJoin(split) + ". The cards below show exactly where each part goes.</li>");
+    steps.push("<li><b>Leave it alone for " + state.plan.years + " year" + (state.plan.years === 1 ? "" : "s") + ".</b> If returns match our assumptions it could grow to about <b>" +
+      formatINR(plan.totalProjected) + "</b>, from " + formatINR(plan.totalInvested) + " you'd put in yourself. It could land anywhere from " + formatINR(plan.totalLow) + " to " +
+      formatINR(plan.totalHigh) + ": markets go down as well as up.</li>");
+    var tip = state.plan.vehicles.indexOf("direct") !== -1
+      ? "<p><b>Tip for beginners:</b> picking individual company shares takes research and time. Mutual funds alone are a perfectly good way to start: you can untick \"Direct equity shares\" below.</p>"
+      : "";
+    $("plain-invest-body").innerHTML = "<h3>Your plan in " + (steps.length) + " steps</h3><ol class=\"plain-steps\">" + steps.join("") + "</ol>" + tip;
+  }
+
   /* ---------------- INIT ---------------- */
+
+  // Simple mode starts on for anyone who hasn't chosen, and is remembered once they do.
+  (function () {
+    var stored = storedSimple();
+    setSimple(stored === null ? true : stored, stored !== null);
+  })();
 
   /** A brief "checking…" beat on first paint, rather than a status that was somehow already known. */
   function bootHealthCheck() {
